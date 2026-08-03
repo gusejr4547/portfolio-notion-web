@@ -1,0 +1,32 @@
+{
+  "enabledMcpjsonServers": [
+    "playwright",
+    "sequential-thinking",
+    "shadcn"
+  ],
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/notify-slack.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PROJECT_DIR}/.claude/hooks/notify-slack.sh\"",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  }
+}
