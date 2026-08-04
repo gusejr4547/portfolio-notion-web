@@ -1,31 +1,19 @@
 import { expect, test } from "@playwright/test";
 
 test.describe("헤더 내비게이션", () => {
-  test("Docs로 이동한다", async ({ page }) => {
+  test("프로젝트로 이동한다", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "Docs" }).click();
-    await expect(page).toHaveURL("/docs");
+    await page.getByRole("link", { name: "프로젝트" }).click();
+    await expect(page).toHaveURL("/projects");
     await expect(
-      page.getByRole("heading", { level: 1, name: "Docs" }),
+      page.getByRole("heading", { level: 1, name: "프로젝트" }),
     ).toBeVisible();
   });
 
-  test("Components로 이동한다", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("link", { name: "Components" }).click();
-    await expect(page).toHaveURL("/components");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Components" }),
-    ).toBeVisible();
-  });
-
-  test("Contact로 이동한다", async ({ page }) => {
-    await page.goto("/");
-    await page.getByRole("link", { name: "Contact" }).click();
-    await expect(page).toHaveURL("/contact");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Contact" }),
-    ).toBeVisible();
+  test("로고를 클릭하면 홈으로 이동한다", async ({ page }) => {
+    await page.goto("/projects");
+    await page.getByRole("link", { name: "포트폴리오" }).click();
+    await expect(page).toHaveURL("/");
   });
 });
 

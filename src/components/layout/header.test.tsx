@@ -7,27 +7,23 @@ import { Header } from "./header";
 // Header는 async가 아닌 sync Server Component라 유닛 테스트가 가능하다
 // (공식 문서: async Server Component는 Vitest 미지원, E2E 권장).
 describe("Header", () => {
-  it("nav 링크 3개를 올바른 href로 렌더한다", () => {
+  it("nav 링크 2개를 올바른 href로 렌더한다", () => {
     render(<Header />);
 
-    expect(screen.getByRole("link", { name: "Docs" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "홈" })).toHaveAttribute(
       "href",
-      "/docs",
+      "/",
     );
-    expect(screen.getByRole("link", { name: "Components" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "프로젝트" })).toHaveAttribute(
       "href",
-      "/components",
-    );
-    expect(screen.getByRole("link", { name: "Contact" })).toHaveAttribute(
-      "href",
-      "/contact",
+      "/projects",
     );
   });
 
   it("로고 링크는 홈(/)으로 이동한다", () => {
     render(<Header />);
 
-    expect(screen.getByRole("link", { name: "Starter Kit" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "포트폴리오" })).toHaveAttribute(
       "href",
       "/",
     );

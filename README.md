@@ -1,8 +1,21 @@
-# Next.js Starter Kit
+# 포트폴리오 (Notion 연동)
 
-빠르게 웹 개발을 시작하기 위한 핵심 기반 스타터킷입니다.
+Notion에 정리해 둔 프로젝트 정보를 웹에서 프로젝트 소개형 포트폴리오로 보여주는 사이트입니다.
 
-## 기술 스택
+## 🎯 프로젝트 개요
+
+**목적**: Notion에 정리해 둔 프로젝트 정보를 웹에서 프로젝트 소개형 포트폴리오로 보여준다
+**사용자**: 포트폴리오를 열람하는 방문자(채용담당자, 잠재 클라이언트 등)
+
+상세 요구사항은 [docs/PRD.md](./docs/PRD.md)를 참고하세요.
+
+## 📱 주요 페이지
+
+1. **홈** (`/`) — 대표 프로젝트 하이라이트 (예정)
+2. **프로젝트 목록** (`/projects`) — Notion Database 기반 프로젝트 카드 그리드 (예정)
+3. **프로젝트 상세** (`/projects/[id]`) — 설명/기술스택/링크/썸네일/기간 (예정)
+
+## 🛠️ 기술 스택
 
 - [Next.js 16](https://nextjs.org) (App Router, Turbopack 기본)
 - TypeScript
@@ -10,6 +23,7 @@
 - [shadcn/ui](https://ui.shadcn.com) — `base-nova` 스타일, [Base UI](https://base-ui.com) 프리미티브 기반
 - [next-themes](https://github.com/pacocoursey/next-themes) — 다크모드
 - [lucide-react](https://lucide.dev) — 아이콘
+- Notion 공식 API (`@notionhq/client`) — 프로젝트 데이터 연동 (예정)
 
 > ⚠️ 이 프로젝트는 표준 Next.js와 다른 부분(Turbopack 기본, 비동기 API 전면화, `middleware` → `proxy`, `next lint` 제거 등)이 있는 최신 Next.js 16입니다. 새 기능을 추가하기 전에 `AGENTS.md`와 `node_modules/next/dist/docs/`를 참고하세요.
 
@@ -53,3 +67,9 @@ npx shadcn add <component-name>
 | `npm run build` | 프로덕션 빌드                                                          |
 | `npm run start` | 프로덕션 서버 실행                                                     |
 | `npm run lint`  | ESLint 실행 (`next lint`는 Next.js 16에서 제거되어 bare `eslint` 사용) |
+
+## 📋 개발 상태
+
+- ✅ 스타터킷 정리 및 포트폴리오 기본 구조(홈/프로젝트 메뉴) 세팅
+- ⏳ Notion API 연동 (프로젝트 목록/상세 데이터 조회)
+- ⏳ 홈 대표 프로젝트 하이라이트, 프로젝트 목록/상세 페이지 구현
