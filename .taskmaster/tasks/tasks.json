@@ -1,0 +1,145 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Notion API 클라이언트 및 환경변수 설정",
+        "description": "@notionhq/client 설치, Notion API 클라이언트 설정 및 환경변수 구성",
+        "details": "1. `@notionhq/client` npm 패키지 설치\n2. `src/env.ts`에 서버 환경변수 추가:\n   - `NOTION_API_KEY`: z.string().min(1) 검증\n   - `NOTION_DATABASE_ID`: z.string().min(1) 검증\n3. `.env.example`에 Notion 환경변수 예시 및 발급 방법 주석 추가\n4. `src/lib/notion/client.ts` 생성:\n   - `@notionhq/client`의 Client를 env.NOTION_API_KEY로 초기화\n   - 싱글턴 패턴으로 클라이언트 인스턴스 export\n5. 타입 안전성을 위해 Notion API 응답 타입 정의 고려\n\n참고:\n- Next.js 16 App Router에서 서버 환경변수는 Server Component와 Server Action에서만 접근 가능\n- t3-oss env-nextjs 패턴 이미 적용 중이므로 동일한 패턴 유지",
+        "testStrategy": "- env.ts 스키마 검증 테스트 (유효하지 않은 환경변수로 실패 확인)\n- Notion 클라이언트 인스턴스가 올바르게 초기화되는지 유닛 테스트\n- .env.local에 실제 키 설정 후 클라이언트 연결 가능 여부 수동 확인",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "프로젝트 도메인 타입 및 Notion 데이터 매핑 정의",
+        "description": "Project 타입 정의, Notion Database 속성 매핑 상수 작성",
+        "details": "1. `src/types/project.ts` 생성:\n\n```typescript\nexport interface ProjectPeriod {\n  start: string | null; // ISO 8601 날짜\n  end: string | null;\n}\n\nexport interface ProjectSummary {\n  id: string; // Notion Page ID\n  title: string;\n  summary: string; // 요약\n  thumbnail: string | null;\n  techStack: string[]; // 기술스택\n  period: ProjectPeriod;\n  featured: boolean; // 대표\n}\n\nexport interface ProjectDetail extends ProjectSummary {\n  githubUrl: string | null;\n  demoUrl: string | null;\n  blocks: NotionBlock[]; // 본문 블록\n}\n\nexport type NotionBlock = \n  | ParagraphBlock\n  | Heading1Block\n  | Heading2Block\n  | Heading3Block\n  | BulletedListBlock\n  | NumberedListBlock\n  | CodeBlock\n  | ImageBlock\n  | QuoteBlock\n  | DividerBlock\n  | CalloutBlock\n  | BookmarkBlock;\n\n// 각 블록 타입 상세 정의\n```\n\n2. Notion DB 속성명 매핑 상수:\n```typescript\nexport const NOTION_PROPERTY_NAMES = {\n  TITLE: '제목',\n  SUMMARY: '요약',\n  TECH_STACK: '기술스택',\n  GITHUB_URL: 'GitHub 링크',\n  DEMO_URL: '데모 링크',\n  THUMBNAIL: '썸네일',\n  PERIOD: '기간',\n  FEATURED: '대표',\n} as const;\n```\n\n3. 블록 렌더러가 지원할 Notion 블록 타입 유니온 정의",
+        "testStrategy": "- TypeScript 컴파일 오류 없이 타입 정의 검증\n- 타입 추론이 올바르게 작동하는지 간단한 유닛 테스트\n- Notion API 응답 샘플과 매핑 상수가 일치하는지 문서 검토",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Notion 데이터 액세스 계층 구축",
+        "description": "Notion API 호출 및 데이터 매핑 함수 구현 (getProjects, getProjectById, getProjectBlocks)",
+        "details": "1. `src/lib/notion/api.ts` 생성:\n\n```typescript\nimport { notionClient } from './client';\nimport { env } from '@/env';\nimport type { ProjectSummary, ProjectDetail } from '@/types/project';\n\n// Notion Database 전체 프로젝트 조회 (커서 페이지네이션 지원)\nexport async function getProjects(): Promise<ProjectSummary[]> {\n  let results = [];\n  let cursor: string | undefined;\n  \n  do {\n    const response = await notionClient.databases.query({\n      database_id: env.NOTION_DATABASE_ID,\n      start_cursor: cursor,\n    });\n    results.push(...response.results);\n    cursor = response.next_cursor ?? undefined;\n  } while (cursor);\n  \n  return results.map(mapPageToProjectSummary);\n}\n\n// 특정 프로젝트 상세 조회\nexport async function getProjectById(id: string): Promise<ProjectDetail | null> {\n  try {\n    const page = await notionClient.pages.retrieve({ page_id: id });\n    const blocks = await getProjectBlocks(id);\n    return mapPageToProjectDetail(page, blocks);\n  } catch (error) {\n    if (error.code === 'object_not_found') return null;\n    throw error;\n  }\n}\n\n// 프로젝트 본문 블록 조회\nexport async function getProjectBlocks(pageId: string) {\n  let results = [];\n  let cursor: string | undefined;\n  \n  do {\n    const response = await notionClient.blocks.children.list({\n      block_id: pageId,\n      start_cursor: cursor,\n    });\n    results.push(...response.results);\n    cursor = response.next_cursor ?? undefined;\n  } while (cursor);\n  \n  return results;\n}\n\n// Notion Page → ProjectSummary 매핑\nfunction mapPageToProjectSummary(page: any): ProjectSummary { /* ... */ }\n\n// Notion Page + Blocks → ProjectDetail 매핑\nfunction mapPageToProjectDetail(page: any, blocks: any[]): ProjectDetail { /* ... */ }\n```\n\n2. 에러 핸들링:\n- Notion API 권한 오류 (401/403)\n- 레이트리밋 (429)\n- 네트워크 실패\n- 필드 누락/타입 불일치 방어 처리\n\n3. 캐시 전략: Next.js 16의 fetch 캐싱과 revalidate 옵션 활용",
+        "testStrategy": "- Notion API 모킹을 통한 유닛 테스트 (*.test.ts, node 환경)\n- 픽스처 기반 매핑 함수 테스트 (필드 누락, null 처리)\n- 실제 Notion Database 연결 통합 테스트 (로컬 환경)\n- 에러 시나리오별 처리 검증 (object_not_found, rate_limit 등)",
+        "priority": "high",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "프로젝트 카드 및 공통 UI 컴포넌트 구현",
+        "description": "ProjectCard, ProjectGrid, TechStackBadges, ProjectLinks 등 재사용 컴포넌트 작성",
+        "details": "1. `src/components/projects/project-card.tsx`:\n- 썸네일 (없으면 플레이스홀더 표시)\n- 제목\n- 요약\n- 기술스택 뱃지 (최대 3개, 나머지는 +N 표시)\n- 프로젝트 기간\n- 카드 전체가 클릭 가능한 링크 (`/projects/[id]`로 이동)\n- 기존 shadcn/ui Card 컴포넌트 재사용\n\n2. `src/components/projects/project-grid.tsx`:\n- 반응형 그리드 레이아웃\n- 모바일: 1컬럼, 태블릿: 2컬럼, 데스크톱: 3컬럼\n- CSS Grid 또는 Tailwind grid 클래스 활용\n\n3. `src/components/projects/tech-stack-badges.tsx`:\n- 기술스택을 Badge로 렌더링\n- 기존 shadcn/ui Badge 재사용\n\n4. `src/components/projects/project-links.tsx`:\n- GitHub 링크 버튼\n- 데모 링크 버튼 (demoUrl이 null이면 렌더링 안 함)\n- `target=\"_blank\" rel=\"noopener noreferrer\"` 속성\n- 기존 shadcn/ui Button 재사용\n\n5. `src/components/projects/empty-state.tsx`:\n- 프로젝트 0건일 때 표시할 빈 상태 UI\n- Lucide React 아이콘 활용\n\n6. `src/lib/mock/projects.ts`:\n- 더미 프로젝트 픽스처 작성 (Phase 2~3 테스트용)\n- 엣지 케이스: 대표 있음/없음, 데모 링크 없음, 썸네일 없음, 기간 미입력",
+        "testStrategy": "- 컴포넌트 유닛 테스트 (*.test.tsx, jsdom)\n- src/test/utils.tsx의 render 사용\n- 더미 데이터로 렌더링 검증\n- 라이트/다크 모드 스냅샷 테스트\n- 썸네일 없음, 데모 링크 없음 등 엣지 케이스 렌더링 확인",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Notion 블록 렌더러 컴포넌트 구현",
+        "description": "Notion 페이지 본문 블록을 React 컴포넌트로 렌더링하는 NotionBlockRenderer 작성",
+        "details": "1. `src/components/notion/block-renderer.tsx`:\n\n지원 블록:\n- paragraph\n- heading_1, heading_2, heading_3\n- bulleted_list_item, numbered_list_item\n- code (언어 하이라이팅)\n- image (next/image 최적화)\n- quote\n- divider\n- callout\n- bookmark\n\n2. Rich text 어노테이션 처리:\n- bold, italic, code, strikethrough, underline\n- link (외부 링크는 새 탭)\n- color\n\n3. 미지원 블록 fallback:\n- 렌더링 중단 없이 안전하게 무시\n- 개발 환경에서 console.warn\n\n4. 타이포그래피 스타일:\n- `src/app/globals.css`에 `.notion-content` 클래스 정의\n- 제목 계층, 단락 간격, 리스트 들여쓰기 등\n\n5. `src/components/notion/rich-text.tsx`:\n- Rich text 배열을 렌더링하는 헬퍼 컴포넌트\n\n참고:\n- Notion API 블록 구조는 공식 문서 참조\n- 이미지 블록의 signed URL 처리 주의",
+        "testStrategy": "- 블록 픽스처 기반 유닛 테스트 (*.test.tsx)\n- 각 블록 타입별 렌더링 검증\n- Rich text 어노테이션 조합 테스트\n- 미지원 블록 fallback 동작 확인\n- 라이트/다크 모드 타이포그래피 시각 검증",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "프로젝트 상세 페이지 라우트 및 동적 세그먼트 구성",
+        "description": "src/app/projects/[id]/page.tsx 생성 및 Next.js 16 동적 라우트 구성",
+        "details": "1. `src/app/projects/[id]/page.tsx` 생성:\n\n```typescript\nimport { notFound } from 'next/navigation';\nimport { getProjectById, getProjects } from '@/lib/notion/api';\nimport { BlockRenderer } from '@/components/notion/block-renderer';\nimport { ProjectLinks } from '@/components/projects/project-links';\nimport { TechStackBadges } from '@/components/projects/tech-stack-badges';\n\ninterface PageProps {\n  params: Promise<{ id: string }>; // Next.js 16 비동기 params\n}\n\nexport async function generateStaticParams() {\n  const projects = await getProjects();\n  return projects.map(p => ({ id: p.id }));\n}\n\nexport async function generateMetadata({ params }: PageProps) {\n  const { id } = await params;\n  const project = await getProjectById(id);\n  if (!project) return {};\n  \n  return {\n    title: project.title,\n    description: project.summary,\n    openGraph: {\n      title: project.title,\n      description: project.summary,\n      images: project.thumbnail ? [project.thumbnail] : [],\n    },\n  };\n}\n\nexport default async function ProjectDetailPage({ params }: PageProps) {\n  const { id } = await params;\n  const project = await getProjectById(id);\n  \n  if (!project) notFound();\n  \n  return (\n    <div className=\"mx-auto max-w-4xl px-4 py-12\">\n      {/* 썸네일, 제목, 기간 */}\n      {/* 기술스택 뱃지 */}\n      {/* GitHub/데모 링크 버튼 */}\n      {/* Notion 본문 렌더링 */}\n      <BlockRenderer blocks={project.blocks} />\n    </div>\n  );\n}\n```\n\n2. `src/app/projects/[id]/loading.tsx` 생성:\n- 상세 페이지 로딩 스켈레톤 UI\n\n3. `src/app/projects/[id]/not-found.tsx` 생성:\n- 프로젝트를 찾을 수 없을 때 표시할 UI\n\n4. `next.config.ts`에 Notion 썸네일 도메인 추가:\n```typescript\nimages: {\n  remotePatterns: [\n    { hostname: 's3.us-west-2.amazonaws.com' },\n    { hostname: 'prod-files-secure.s3.us-west-2.amazonaws.com' },\n  ],\n}\n```\n\n참고:\n- Next.js 16에서 params는 Promise로 변경됨\n- node_modules/next/dist/docs/ 가이드 확인",
+        "testStrategy": "- E2E 테스트: 상세 페이지 렌더링 확인 (e2e/project-detail.spec.ts)\n- 존재하지 않는 ID로 404 페이지 표시 확인\n- generateMetadata OG 태그 검증\n- 썸네일 이미지 최적화 적용 확인\n- 데모 링크 없는 프로젝트의 버튼 숨김 확인",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "F001 프로젝트 목록 페이지 구현",
+        "description": "전체 프로젝트를 기간(시작일) 최신순으로 정렬하여 카드 그리드로 표시",
+        "details": "1. `src/app/projects/page.tsx` 업데이트:\n\n```typescript\nimport { getProjects } from '@/lib/notion/api';\nimport { ProjectGrid } from '@/components/projects/project-grid';\nimport { ProjectCard } from '@/components/projects/project-card';\nimport { EmptyState } from '@/components/projects/empty-state';\nimport { sortProjectsByPeriod } from '@/lib/utils/sort';\n\nexport default async function ProjectsPage() {\n  const projects = await getProjects();\n  const sorted = sortProjectsByPeriod(projects); // 기간(시작일) 최신순\n  \n  if (sorted.length === 0) {\n    return <EmptyState />;\n  }\n  \n  return (\n    <div className=\"mx-auto max-w-6xl px-4 py-12\">\n      <h1 className=\"text-3xl font-semibold tracking-tight\">프로젝트</h1>\n      <ProjectGrid>\n        {sorted.map(project => (\n          <ProjectCard key={project.id} project={project} />\n        ))}\n      </ProjectGrid>\n    </div>\n  );\n}\n```\n\n2. `src/lib/utils/sort.ts` 생성:\n```typescript\nimport type { ProjectSummary } from '@/types/project';\n\nexport function sortProjectsByPeriod(projects: ProjectSummary[]): ProjectSummary[] {\n  return [...projects].sort((a, b) => {\n    const aStart = a.period.start ? new Date(a.period.start).getTime() : 0;\n    const bStart = b.period.start ? new Date(b.period.start).getTime() : 0;\n    return bStart - aStart; // 최신순\n  });\n}\n```\n\n3. ISR 캐싱 설정:\n```typescript\nexport const revalidate = 3600; // 1시간마다 재검증\n```\n\n4. 프로젝트 0건 상태 처리\n5. Notion API 오류 상태 처리",
+        "testStrategy": "- 정렬 함수 유닛 테스트 (*.test.ts, 시작일 null 처리 포함)\n- E2E 테스트: 목록 페이지 렌더링 및 카드 클릭 이동 (e2e/projects.spec.ts)\n- Playwright MCP로 실제 화면 동작 확인\n- 프로젝트 0건 빈 상태 렌더링 확인\n- 반응형 그리드 레이아웃 검증 (모바일/태블릿/데스크톱)",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "F003 홈 페이지 대표 프로젝트 하이라이트 구현",
+        "description": "대표(Featured) 프로젝트를 홈에 선별 노출하고, 없으면 최신 프로젝트로 대체",
+        "details": "1. `src/app/page.tsx` 업데이트:\n\n```typescript\nimport { getProjects } from '@/lib/notion/api';\nimport { ProjectGrid } from '@/components/projects/project-grid';\nimport { ProjectCard } from '@/components/projects/project-card';\nimport { selectFeaturedProjects } from '@/lib/utils/featured';\nimport { Button } from '@/components/ui/button';\nimport Link from 'next/link';\n\nexport default async function Home() {\n  const projects = await getProjects();\n  const featured = selectFeaturedProjects(projects);\n  \n  return (\n    <div className=\"mx-auto max-w-5xl px-4 py-24\">\n      <div className=\"text-center\">\n        <h1 className=\"text-4xl font-semibold tracking-tight sm:text-5xl\">\n          포트폴리오\n        </h1>\n        <p className=\"mt-4 max-w-xl mx-auto text-muted-foreground\">\n          Notion에 정리한 프로젝트를 웹에서 소개합니다.\n        </p>\n      </div>\n      \n      <section className=\"mt-16\">\n        <h2 className=\"text-2xl font-semibold\">대표 프로젝트</h2>\n        <ProjectGrid className=\"mt-6\">\n          {featured.map(project => (\n            <ProjectCard key={project.id} project={project} />\n          ))}\n        </ProjectGrid>\n        <div className=\"mt-8 text-center\">\n          <Button asChild size=\"lg\">\n            <Link href=\"/projects\">전체 프로젝트 보기</Link>\n          </Button>\n        </div>\n      </section>\n    </div>\n  );\n}\n```\n\n2. `src/lib/utils/featured.ts` 생성:\n```typescript\nimport type { ProjectSummary } from '@/types/project';\nimport { sortProjectsByPeriod } from './sort';\n\nexport function selectFeaturedProjects(\n  projects: ProjectSummary[],\n  limit = 3\n): ProjectSummary[] {\n  const featured = projects.filter(p => p.featured);\n  \n  if (featured.length > 0) {\n    return sortProjectsByPeriod(featured).slice(0, limit);\n  }\n  \n  // Fallback: 기간 최신순 상위 N개\n  return sortProjectsByPeriod(projects).slice(0, limit);\n}\n```\n\n3. ISR 캐싱 설정",
+        "testStrategy": "- 선별 로직 유닛 테스트 (*.test.ts)\n  - 대표 프로젝트 전부 있음\n  - 대표 프로젝트 일부만 있음\n  - 대표 프로젝트 없음 (fallback)\n- E2E 테스트: 홈에서 대표 프로젝트 노출 확인\n- 카드 클릭 → 상세 페이지 이동 확인\n- \"전체 프로젝트 보기\" 버튼 → 목록 페이지 이동 확인\n- Playwright MCP로 실제 화면 동작 검증",
+        "priority": "high",
+        "dependencies": [
+          3,
+          4
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "핵심 사용자 플로우 E2E 테스트 작성",
+        "description": "홈 → 목록 → 상세 → 외부 링크 전체 여정 및 엣지 케이스 검증",
+        "details": "1. `e2e/user-journey.spec.ts` 생성:\n\n```typescript\nimport { test, expect } from '@playwright/test';\n\ntest.describe('포트폴리오 사용자 여정', () => {\n  test('홈 → 대표 프로젝트 카드 클릭 → 상세 페이지', async ({ page }) => {\n    await page.goto('/');\n    await expect(page.getByRole('heading', { name: '포트폴리오' })).toBeVisible();\n    \n    const firstCard = page.locator('[data-testid=\"project-card\"]').first();\n    await firstCard.click();\n    \n    await expect(page).toHaveURL(/\\/projects\\/[a-f0-9-]+/);\n  });\n  \n  test('홈 → 전체 프로젝트 보기 → 목록 → 상세', async ({ page }) => {\n    await page.goto('/');\n    await page.getByRole('link', { name: '전체 프로젝트 보기' }).click();\n    \n    await expect(page).toHaveURL('/projects');\n    await expect(page.getByRole('heading', { name: '프로젝트' })).toBeVisible();\n    \n    const card = page.locator('[data-testid=\"project-card\"]').first();\n    await card.click();\n    \n    await expect(page).toHaveURL(/\\/projects\\/[a-f0-9-]+/);\n  });\n  \n  test('상세 페이지 → GitHub 링크 새 탭', async ({ page, context }) => {\n    // 테스트 구현\n  });\n  \n  test('데모 링크 없는 프로젝트는 데모 버튼 숨김', async ({ page }) => {\n    // 테스트 구현\n  });\n});\n```\n\n2. `e2e/edge-cases.spec.ts` 생성:\n- 프로젝트 0건 상태\n- 썸네일 없는 프로젝트\n- 존재하지 않는 ID (404)\n- Notion API 오류 응답 모킹\n\n3. 모바일 뷰포트 테스트\n4. 다크 모드 테스트\n\n5. test-engineer 서브에이전트 활용 가능",
+        "testStrategy": "- Playwright E2E 전체 실행: npm run test:e2e\n- 모바일/태블릿/데스크톱 뷰포트 조합 테스트\n- 라이트/다크 모드 조합 테스트\n- CI에서 E2E 통과 확인",
+        "priority": "medium",
+        "dependencies": [
+          6,
+          7,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "SEO, 성능 최적화 및 Vercel 배포",
+        "description": "ISR 캐싱, 이미지 최적화, sitemap/robots 생성 및 프로덕션 배포",
+        "details": "1. ISR revalidate 설정:\n- 홈/목록: 1시간 (3600초)\n- 상세: 1시간\n- Notion 썸네일 서명 URL 만료 주기 고려\n\n2. `next/image` 최적화:\n```typescript\n<Image\n  src={project.thumbnail}\n  alt={project.title}\n  width={800}\n  height={400}\n  priority={featured}\n  placeholder=\"blur\"\n  blurDataURL=\"data:image/...\"\n/>\n```\n\n3. `src/app/sitemap.ts` 생성:\n```typescript\nimport { getProjects } from '@/lib/notion/api';\n\nexport default async function sitemap() {\n  const projects = await getProjects();\n  \n  return [\n    { url: '/', lastModified: new Date() },\n    { url: '/projects', lastModified: new Date() },\n    ...projects.map(p => ({\n      url: `/projects/${p.id}`,\n      lastModified: new Date(),\n    })),\n  ];\n}\n```\n\n4. `src/app/robots.ts` 생성:\n```typescript\nexport default function robots() {\n  return {\n    rules: { userAgent: '*', allow: '/' },\n    sitemap: `${env.NEXT_PUBLIC_APP_URL}/sitemap.xml`,\n  };\n}\n```\n\n5. Vercel 배포:\n- Vercel 프로젝트 연결\n- 환경변수 설정: NOTION_API_KEY, NOTION_DATABASE_ID, NEXT_PUBLIC_APP_URL\n- Notion Integration에 Database 공유 권한 부여 확인\n- 프로덕션 스모크 테스트 (홈/목록/상세 3개 페이지)\n\n6. README 업데이트:\n- 로컬 실행 방법\n- 환경변수 설정 가이드\n- Notion Integration 설정 가이드\n\n7. 접근성:\n- 시맨틱 마크업 검증 (article, section, nav 등)\n- 키보드 포커스 순서 확인\n- 이미지 alt 텍스트\n- Lighthouse 접근성 점수 90+ 목표",
+        "testStrategy": "- Lighthouse CI 실행 (성능/접근성/SEO/Best Practices)\n- sitemap.xml 생성 확인\n- robots.txt 생성 확인\n- OG 태그 검증 (Open Graph Debugger)\n- 프로덕션 배포 후 스모크 테스트\n- ISR 캐싱 동작 확인 (revalidate 이후 콘텐츠 갱신)",
+        "priority": "medium",
+        "dependencies": [
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2026-08-05T06:52:48.509Z",
+      "updated": "2026-08-05T06:52:48.509Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
