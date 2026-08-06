@@ -1,0 +1,437 @@
+{
+  "tasks": [
+    {
+      "id": "afb8085d-20ad-4f29-b710-0ae532bd69d3",
+      "name": "Task001: 프로젝트 상세 라우트 및 페이지 골격 생성",
+      "description": "src/app/projects/[id]/page.tsx 빈 껍데기 생성 (식별자는 Notion Page ID이므로 [slug]가 아닌 [id] 사용), 상세 세그먼트용 loading.tsx/not-found.tsx 배치, generateMetadata 시그니처 골격 정의(내용 채우기는 Task009), 홈/목록/상세 3개 라우트가 모두 정상 응답하는지 확인",
+      "notes": "[slug] 세그먼트 사용 금지, 반드시 [id] 사용. Next.js 16 API는 추측으로 구현하지 말고 node_modules/next/dist/docs/ 확인 필수.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-08-06T13:22:59.088Z",
+      "updatedAt": "2026-08-06T13:22:59.088Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/projects/[id]/page.tsx",
+          "type": "CREATE",
+          "description": "프로젝트 상세 페이지 골격"
+        },
+        {
+          "path": "src/app/projects/[id]/loading.tsx",
+          "type": "CREATE",
+          "description": "상세 세그먼트 로딩 UI"
+        },
+        {
+          "path": "src/app/projects/[id]/not-found.tsx",
+          "type": "CREATE",
+          "description": "상세 세그먼트 404 UI"
+        },
+        {
+          "path": "src/app/loading.tsx",
+          "type": "REFERENCE",
+          "description": "기존 로딩 UI 스타일 참고"
+        },
+        {
+          "path": "src/app/not-found.tsx",
+          "type": "REFERENCE",
+          "description": "기존 404 UI 스타일 참고"
+        }
+      ],
+      "implementationGuide": "1. node_modules/next/dist/docs/에서 확인된 대로 Next 16의 PageProps<'/projects/[id]'> 헬퍼 타입 사용, params는 Promise이므로 async 함수 내에서 await params로 언래핑\n2. export default async function Page(props: PageProps<'/projects/[id]'>) { const {id} = await props.params; ... }\n3. generateMetadata(props: PageProps<'/projects/[id]'>) 시그니처만 정의하고 고정 값 또는 빈 객체 반환 (실제 조회 로직은 Task009)\n4. loading.tsx/not-found.tsx는 기존 src/app/loading.tsx, src/app/not-found.tsx의 스타일을 참고해 세그먼트 전용 파일로 배치(파라미터 없는 컴포넌트)\n5. npm run dev로 /, /projects, /projects/test-id 3개 라우트가 200 응답하는지 확인",
+      "verificationCriteria": "npm run dev로 /, /projects, /projects/test-id 3개 라우트 200 응답 확인. npm run test:run과 npm run test:e2e 통과(기존 테스트 회귀 없음).",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
+    },
+    {
+      "id": "7e9d6d05-1d9c-4d51-8f86-4e5f41fc82ad",
+      "name": "Task002: 도메인 타입 정의 및 Notion 데이터 계약 설계",
+      "description": "src/types/project.ts에 Project, ProjectSummary, ProjectDetail, ProjectPeriod 타입 정의, Notion DB 속성명 매핑 상수 정의(제목/요약/기술스택/GitHub 링크/데모 링크/썸네일/기간/대표), src/env.ts 서버 스키마에 NOTION_API_KEY, NOTION_DATABASE_ID 추가, .env.example 갱신, 블록 렌더러가 지원할 Notion 블록 타입 유니온 정의",
+      "notes": "NOTION_API_KEY는 client 스키마나 NEXT_PUBLIC_ 접두사로 절대 노출 금지(서버 전용).",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-08-06T13:22:59.088Z",
+      "updatedAt": "2026-08-06T13:22:59.088Z",
+      "relatedFiles": [
+        {
+          "path": "src/types/project.ts",
+          "type": "CREATE",
+          "description": "도메인 타입 및 Notion 속성 매핑 상수"
+        },
+        {
+          "path": "src/env.ts",
+          "type": "TO_MODIFY",
+          "description": "Notion 환경변수 zod 스키마 추가"
+        },
+        {
+          "path": ".env.example",
+          "type": "TO_MODIFY",
+          "description": "Notion 환경변수 예시 및 발급 방법 주석"
+        }
+      ],
+      "implementationGuide": "1. src/env.ts의 기존 server 스키마 객체(t3-oss/env-nextjs + zod)에 NOTION_API_KEY: z.string().min(1), NOTION_DATABASE_ID: z.string().min(1) 필드 추가\n2. src/types/project.ts에 인터페이스 정의: Project, ProjectSummary(목록용 축약), ProjectDetail(상세용 전체), ProjectPeriod({start: string, end?: string})\n3. Notion 속성명 매핑은 별도 상수 객체로 관리(예: NOTION_PROPERTY = {title:'제목', summary:'요약', techStack:'기술스택', github:'GitHub 링크', demo:'데모 링크', thumbnail:'썸네일', period:'기간', featured:'대표'})\n4. NotionBlockType 유니온 타입 정의(paragraph, heading_1~3, bulleted_list_item, numbered_list_item, code, image, quote, divider, callout, bookmark)\n5. .env.example에 NOTION_API_KEY, NOTION_DATABASE_ID 항목과 발급 방법 주석 추가",
+      "verificationCriteria": "tsc 타입체크 통과. env 스키마에 필수 값이 없을 때 빌드/부팅 시점에 zod 검증 실패로 명확히 에러가 발생하는지 확인.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
+    },
+    {
+      "id": "3304e058-9cf9-4513-a11b-20766ff10b5b",
+      "name": "Task003: 프로젝트 공통 컴포넌트 및 더미 데이터 구축",
+      "description": "src/lib/mock/projects.ts에 더미 프로젝트 픽스처 작성(대표 있음/없음, 데모 링크 없음, 썸네일 없음, 기간 미입력 등 엣지 케이스 포함), ProjectCard/ProjectGrid/TechStackBadges/ProjectLinks/EmptyState 구현, 기설치 shadcn card/badge/button 재사용, 썸네일 부재 시 플레이스홀더 처리, 컴포넌트 유닛 테스트(*.test.tsx, jsdom) 작성",
+      "notes": "컴포넌트 테스트에서 @testing-library/react의 render를 직접 import하지 않는다.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7e9d6d05-1d9c-4d51-8f86-4e5f41fc82ad"
+        }
+      ],
+      "createdAt": "2026-08-06T13:22:59.088Z",
+      "updatedAt": "2026-08-06T13:22:59.088Z",
+      "relatedFiles": [
+        {
+          "path": "src/lib/mock/projects.ts",
+          "type": "CREATE",
+          "description": "더미 프로젝트 픽스처"
+        },
+        {
+          "path": "src/components/project/project-card.tsx",
+          "type": "CREATE",
+          "description": "프로젝트 카드 컴포넌트"
+        },
+        {
+          "path": "src/components/project/project-grid.tsx",
+          "type": "CREATE",
+          "description": "카드 그리드 컴포넌트"
+        },
+        {
+          "path": "src/components/project/tech-stack-badges.tsx",
+          "type": "CREATE",
+          "description": "기술스택 뱃지 컴포넌트"
+        },
+        {
+          "path": "src/components/project/project-links.tsx",
+          "type": "CREATE",
+          "description": "GitHub/데모 링크 버튼"
+        },
+        {
+          "path": "src/components/project/empty-state.tsx",
+          "type": "CREATE",
+          "description": "0건 안내 컴포넌트"
+        },
+        {
+          "path": "src/test/utils.tsx",
+          "type": "REFERENCE",
+          "description": "provider 포함 render 재사용"
+        }
+      ],
+      "implementationGuide": "1. Task002의 ProjectSummary/ProjectDetail 타입을 사용해 src/lib/mock/projects.ts에 5~8개 픽스처 작성(정상/대표없음/데모없음/썸네일없음/기간없음 케이스 각각 최소 1개)\n2. ProjectCard(썸네일+제목+요약+기간+기술스택 뱃지), ProjectGrid(카드 배열 렌더), TechStackBadges(shadcn badge 매핑), ProjectLinks(GitHub/데모 버튼, 데모 없으면 숨김), EmptyState(0건 안내) 컴포넌트를 src/components/project/ 아래 생성\n3. 신규 UI 프리미티브 작성 금지, 기설치 shadcn card/badge/button만 조합\n4. 각 컴포넌트별 *.test.tsx 작성, src/test/utils.tsx의 render 사용(RTL 기본 render 직접 import 금지)",
+      "verificationCriteria": "npm run test:run 통과. 대표/데모없음/썸네일없음/기간없음 각 엣지 케이스에 대한 렌더링 테스트가 존재해야 한다.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
+    },
+    {
+      "id": "23f66c55-5e80-474d-b984-30a269a6c238",
+      "name": "Task004: 홈/목록/상세 페이지 UI 완성 (더미 데이터)",
+      "description": "홈: 히어로 문구 + 대표 프로젝트 섹션 + 전체 프로젝트 보기 CTA. 목록: 반응형 카드 그리드(모바일 1/태블릿 2/데스크톱 3컬럼). 상세: 썸네일/제목/기간/기술스택/본문 영역/GitHub·데모 버튼(데모 없으면 숨김, 새 탭+rel=noopener noreferrer). 라이트/다크+모바일 뷰포트 검증. e2e/navigation.spec.ts 확장",
+      "notes": "프로젝트 상세는 헤더 메뉴에 노출하지 않는다(카드 클릭으로만 진입). PRD MVP 범위 외 기능(블로그/필터/About/로그인/다국어/Contact) 추가 금지.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "3304e058-9cf9-4513-a11b-20766ff10b5b"
+        },
+        {
+          "taskId": "afb8085d-20ad-4f29-b710-0ae532bd69d3"
+        }
+      ],
+      "createdAt": "2026-08-06T13:22:59.088Z",
+      "updatedAt": "2026-08-06T13:22:59.088Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "홈 히어로+대표 프로젝트 섹션"
+        },
+        {
+          "path": "src/app/projects/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "프로젝트 목록 그리드"
+        },
+        {
+          "path": "src/app/projects/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "프로젝트 상세 UI"
+        },
+        {
+          "path": "e2e/navigation.spec.ts",
+          "type": "TO_MODIFY",
+          "description": "홈→목록→상세 라우팅 E2E 확장"
+        }
+      ],
+      "implementationGuide": "1. src/app/page.tsx를 Task003의 ProjectGrid/ProjectCard로 대표 프로젝트 섹션 구성(더미 데이터 사용)\n2. src/app/projects/page.tsx를 ProjectGrid로 전체 목록 렌더(Tailwind 반응형 grid-cols)\n3. src/app/projects/[id]/page.tsx를 ProjectLinks 등으로 상세 레이아웃 완성\n4. 모든 외부 링크는 target=_blank rel=noopener noreferrer\n5. e2e/navigation.spec.ts에 홈→목록→상세 라우팅 플로우 케이스 추가",
+      "verificationCriteria": "Playwright MCP로 라이트/다크 모드 및 모바일 뷰포트에서 레이아웃 확인. npm run test:e2e 통과.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
+    },
+    {
+      "id": "0f5ba62f-15ca-4bd8-a0fa-2bdbce7e0d15",
+      "name": "Task005: Notion 블록 렌더러 컴포넌트 구현",
+      "description": "paragraph, heading_1~3, bulleted/numbered list, code, image, quote, divider, callout, bookmark 블록 지원. rich text 어노테이션(bold, italic, code, strikethrough, link) 처리. 미지원 블록은 렌더링을 중단하지 않고 안전하게 무시. 본문 타이포그래피 스타일 정의. 블록 픽스처 기반 유닛 테스트 작성",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7e9d6d05-1d9c-4d51-8f86-4e5f41fc82ad"
+        }
+      ],
+      "createdAt": "2026-08-06T13:22:59.088Z",
+      "updatedAt": "2026-08-06T13:22:59.088Z",
+      "relatedFiles": [
+        {
+          "path": "src/components/notion/block-renderer.tsx",
+          "type": "CREATE",
+          "description": "Notion 블록 렌더러"
+        },
+        {
+          "path": "src/components/notion/block-renderer.test.tsx",
+          "type": "CREATE",
+          "description": "블록 렌더러 유닛 테스트"
+        },
+        {
+          "path": "src/app/globals.css",
+          "type": "TO_MODIFY",
+          "description": "본문 타이포그래피 스타일 추가"
+        }
+      ],
+      "implementationGuide": "1. Task002의 NotionBlockType 유니온을 기반으로 블록 타입별 렌더 함수를 map/switch로 구성\n2. rich text 배열의 annotations(bold/italic/code/strikethrough)와 link href를 span/a 태그로 변환하는 공통 유틸 작성\n3. 알 수 없는 block type은 null 반환(throw 금지)으로 안전 무시\n4. globals.css 또는 유틸리티 클래스로 본문 타이포그래피(prose 스타일) 정의\n5. 블록 타입별 픽스처를 이용한 *.test.tsx 작성(jsdom)",
+      "verificationCriteria": "미지원 블록 타입 픽스처를 입력했을 때 렌더링이 중단되지 않고 안전하게 무시되는지 테스트로 검증. 지원 블록 각각에 대한 렌더링 테스트 존재.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
+    },
+    {
+      "id": "58036841-08ef-441d-923f-84e1fd892a5f",
+      "name": "Task006: Notion API 클라이언트 및 데이터 액세스 계층 구축",
+      "description": "@notionhq/client 설치 후 src/lib/notion/client.ts에 싱글턴 클라이언트 구성. getProjects(), getProjectById(id), getProjectBlocks(id) 구현(커서 페이지네이션으로 100건 초과 대응). mapPageToProject() 매핑 함수 구현 및 필드 누락/타입 불일치 방어 처리. 에러 핸들링(권한 오류, 레이트리밋, 네트워크 실패)과 캐시 재검증 전략 확정. Notion 응답 픽스처 기반 유닛 테스트(node, SDK 모킹) 작성",
+      "notes": "필드 누락/타입 불일치 방어 처리는 이 데이터 액세스 계층에서만 수행하고, UI 컴포넌트는 원시 Notion 응답을 직접 다루지 않는다.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "7e9d6d05-1d9c-4d51-8f86-4e5f41fc82ad"
+        }
+      ],
+      "createdAt": "2026-08-06T13:22:59.088Z",
+      "updatedAt": "2026-08-06T13:22:59.088Z",
+      "relatedFiles": [
+        {
+          "path": "src/lib/notion/client.ts",
+          "type": "CREATE",
+          "description": "Notion 클라이언트 싱글턴 및 조회 함수"
+        },
+        {
+          "path": "src/lib/notion/mappers.ts",
+          "type": "CREATE",
+          "description": "Notion 응답 -> 도메인 타입 매핑"
+        },
+        {
+          "path": "src/lib/notion/client.test.ts",
+          "type": "CREATE",
+          "description": "SDK 모킹 기반 유닛 테스트"
+        },
+        {
+          "path": "package.json",
+          "type": "TO_MODIFY",
+          "description": "@notionhq/client 의존성 추가"
+        }
+      ],
+      "implementationGuide": "1. npm install @notionhq/client\n2. src/lib/notion/client.ts에서 env.NOTION_API_KEY로 싱글턴 Client 인스턴스 생성(모듈 스코프 캐싱)\n3. getProjects()는 databases.query를 start_cursor 루프로 반복 호출해 100건 초과 시에도 전체 목록 수집\n4. getProjectById(id)는 pages.retrieve, getProjectBlocks(id)는 blocks.children.list(페이지네이션 포함)\n5. src/lib/notion/mappers.ts의 mapPageToProject()에서 Task002 매핑 상수를 사용해 Notion 원시 응답 -> Project 타입 변환, 필드 누락 시 안전한 기본값/undefined 처리\n6. 권한 오류(401/403), 레이트리밋(429, retry-after 고려), 네트워크 실패를 구분한 에러 처리 및 재검증(revalidate) 전략 정의\n7. Notion SDK를 vitest에서 모킹해 node 환경 유닛 테스트 작성",
+      "verificationCriteria": "SDK 모킹 기반으로 100건 초과 페이지네이션, 필드 누락, 권한/레이트리밋/네트워크 에러 케이스에 대한 유닛 테스트 작성. 해당 작업 파일(/tasks/006-*.md)에 '## 테스트 체크리스트' 섹션 포함 필수.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
+    },
+    {
+      "id": "c332486c-5b70-4cf8-b502-1da55f44e615",
+      "name": "Task007: F001 프로젝트 목록 조회 연동",
+      "description": "src/app/projects/page.tsx를 async Server Component로 전환하고 더미 데이터를 실제 조회로 교체. 기간(시작일) 기준 최신순 정렬 로직을 순수 함수로 분리(시작일 미입력 항목 처리 규칙 포함). 정렬 함수 유닛 테스트(node) 작성. 프로젝트 0건 및 조회 실패 상태 UI 처리. Playwright MCP로 목록 렌더링과 카드 클릭 이동을 확인하고 E2E 스펙에 반영",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "23f66c55-5e80-474d-b984-30a269a6c238"
+        },
+        {
+          "taskId": "58036841-08ef-441d-923f-84e1fd892a5f"
+        }
+      ],
+      "createdAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/projects/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "async Server Component로 전환"
+        },
+        {
+          "path": "src/lib/sort-projects.ts",
+          "type": "CREATE",
+          "description": "기간 최신순 정렬 순수 함수"
+        },
+        {
+          "path": "src/lib/sort-projects.test.ts",
+          "type": "CREATE",
+          "description": "정렬 함수 유닛 테스트"
+        }
+      ],
+      "implementationGuide": "1. src/lib/sort-projects.ts에 sortProjectsByPeriodDesc(projects) 순수 함수 작성, 시작일 미입력 항목은 배열 끝으로 정렬\n2. src/app/projects/page.tsx를 async function으로 전환, Task006의 getProjects() 호출\n3. 결과 0건이면 Task003의 EmptyState 렌더, 조회 실패(throw) 시 error.tsx가 처리하도록 위임\n4. Playwright MCP로 /projects 접속 후 카드 클릭 시 상세로 이동하는지 확인 후 e2e 스펙 반영",
+      "verificationCriteria": "정렬 함수 유닛 테스트(node) 작성 및 통과. Playwright MCP로 목록 렌더링과 카드 클릭 이동 확인 후 E2E 스펙에 반영. 해당 작업 파일에 '## 테스트 체크리스트' 섹션 포함 필수.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. Phase 3(Task007~010)는 Phase 1~2에서 만든 라우트/타입/컴포넌트/더미데이터/Notion 클라이언트를 실제로 연결하는 단계이며, Phase 4(Task011~012)는 최적화와 배포다. 모든 Notion 연동·비즈니스 로직 태스크는 순수 함수 분리 + 유닛 테스트(node) + Playwright MCP E2E 검증을 필수로 하며, shrimp-rules.md의 커밋/테스트/데이터 계약 규칙을 준수해야 한다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다."
+    },
+    {
+      "id": "8f348d26-7263-425a-8047-adbb9d71667b",
+      "name": "Task008: F003 홈 대표 프로젝트 하이라이트 연동",
+      "description": "대표(checkbox) 필터링과 미체크 시 기간 최신순 대체 노출 fallback 구현. 선별 로직을 순수 함수로 분리하고 유닛 테스트 작성(대표 전부/일부/없음 케이스). 홈의 전체 프로젝트 보기 CTA를 프로젝트 목록 페이지에 연결. Playwright MCP로 대표 프로젝트 노출과 카드 클릭 → 상세 이동을 확인하고 E2E 스펙에 반영",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c332486c-5b70-4cf8-b502-1da55f44e615"
+        }
+      ],
+      "createdAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "대표 프로젝트 선별 로직 연동"
+        },
+        {
+          "path": "src/lib/select-featured-projects.ts",
+          "type": "CREATE",
+          "description": "대표 프로젝트 선별 순수 함수"
+        },
+        {
+          "path": "src/lib/select-featured-projects.test.ts",
+          "type": "CREATE",
+          "description": "대표 전부/일부/없음 케이스 유닛 테스트"
+        }
+      ],
+      "implementationGuide": "1. src/lib/select-featured-projects.ts에 selectFeaturedProjects(projects) 순수 함수 작성: featured=true인 항목만 반환, 없으면 Task007의 sortProjectsByPeriodDesc 결과 상위 N개 반환\n2. src/app/page.tsx에서 Task006 getProjects() 호출 후 selectFeaturedProjects 적용\n3. 전체 프로젝트 보기 버튼을 next/link로 /projects에 연결\n4. Playwright MCP로 대표 프로젝트 노출 확인 및 카드 클릭 시 상세 이동 확인",
+      "verificationCriteria": "대표 전부/일부/없음 3케이스 유닛 테스트 통과. Playwright MCP로 하이라이트 노출 및 상세 이동 확인. 해당 작업 파일에 '## 테스트 체크리스트' 섹션 포함 필수.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. Phase 3(Task007~010)는 Phase 1~2에서 만든 라우트/타입/컴포넌트/더미데이터/Notion 클라이언트를 실제로 연결하는 단계이며, Phase 4(Task011~012)는 최적화와 배포다. 모든 Notion 연동·비즈니스 로직 태스크는 순수 함수 분리 + 유닛 테스트(node) + Playwright MCP E2E 검증을 필수로 하며, shrimp-rules.md의 커밋/테스트/데이터 계약 규칙을 준수해야 한다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다."
+    },
+    {
+      "id": "1593de54-54db-4b09-b867-463cd5ede2a0",
+      "name": "Task009: F002 프로젝트 상세 조회 연동",
+      "description": "generateStaticParams로 상세 경로 생성, 상세 데이터와 본문 블록을 실제 조회로 교체. 존재하지 않거나 접근 불가한 id는 notFound()로 처리. generateMetadata에서 제목/요약/썸네일 기반 메타데이터 및 OG 태그 생성. Notion 썸네일 도메인을 next.config.ts의 remotePatterns에 등록(서명 URL 만료 대응 포함). Playwright MCP로 상세 정보 노출, 데모 링크 없는 프로젝트의 버튼 숨김, 외부 링크 새 탭 동작을 확인하고 E2E 스펙에 반영",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "23f66c55-5e80-474d-b984-30a269a6c238"
+        },
+        {
+          "taskId": "0f5ba62f-15ca-4bd8-a0fa-2bdbce7e0d15"
+        },
+        {
+          "taskId": "58036841-08ef-441d-923f-84e1fd892a5f"
+        }
+      ],
+      "createdAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/projects/[id]/page.tsx",
+          "type": "TO_MODIFY",
+          "description": "실제 Notion 데이터 조회로 교체"
+        },
+        {
+          "path": "next.config.ts",
+          "type": "TO_MODIFY",
+          "description": "Notion 썸네일 도메인 remotePatterns 등록"
+        }
+      ],
+      "implementationGuide": "1. src/app/projects/[id]/page.tsx에서 Task006의 getProjectById(id), getProjectBlocks(id) 호출, 조회 실패/404 시 notFound() 호출\n2. generateStaticParams()에서 getProjects()로 전체 id 목록 반환\n3. generateMetadata에서 title/description/openGraph.images를 실제 조회 데이터로 채움\n4. Task005의 block-renderer로 본문 렌더링, Task003의 ProjectLinks로 GitHub/데모 버튼(데모 없으면 숨김) 렌더\n5. next.config.ts images.remotePatterns에 Notion 파일 호스트(예: prod-files-secure.s3.us-west-2.amazonaws.com, notion.so 등) 등록",
+      "verificationCriteria": "Playwright MCP로 상세 정보 노출, 데모 링크 없는 프로젝트의 버튼 숨김, 외부 링크 새 탭(target=_blank, rel=noopener noreferrer) 동작, 잘못된 id 404 확인. 해당 작업 파일에 '## 테스트 체크리스트' 섹션 포함 필수.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. Phase 3(Task007~010)는 Phase 1~2에서 만든 라우트/타입/컴포넌트/더미데이터/Notion 클라이언트를 실제로 연결하는 단계이며, Phase 4(Task011~012)는 최적화와 배포다. 모든 Notion 연동·비즈니스 로직 태스크는 순수 함수 분리 + 유닛 테스트(node) + Playwright MCP E2E 검증을 필수로 하며, shrimp-rules.md의 커밋/테스트/데이터 계약 규칙을 준수해야 한다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다."
+    },
+    {
+      "id": "cdf6d7aa-d326-432d-a636-801102772820",
+      "name": "Task010: 핵심 사용자 플로우 통합 테스트",
+      "description": "전체 여정 E2E 작성: 홈 → 상세, 홈 → 목록 → 상세 → 외부 링크. 엣지 케이스 검증: 프로젝트 0건, 썸네일 없음, 잘못된 id(404), Notion 오류 응답. 모바일 뷰포트와 다크모드 조합 회귀 검증. npm run test:run과 npm run test:e2e 전체 통과 확인",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "c332486c-5b70-4cf8-b502-1da55f44e615"
+        },
+        {
+          "taskId": "8f348d26-7263-425a-8047-adbb9d71667b"
+        },
+        {
+          "taskId": "1593de54-54db-4b09-b867-463cd5ede2a0"
+        }
+      ],
+      "createdAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "relatedFiles": [
+        {
+          "path": "e2e/project-journey.spec.ts",
+          "type": "CREATE",
+          "description": "전체 사용자 여정 E2E"
+        },
+        {
+          "path": "e2e/theme.spec.ts",
+          "type": "REFERENCE",
+          "description": "다크모드 테스트 패턴 참고"
+        }
+      ],
+      "implementationGuide": "1. e2e/ 아래 project-journey.spec.ts 등으로 홈→상세, 홈→목록→상세→외부링크(새 탭 확인) 전체 여정 시나리오 작성\n2. Notion 클라이언트를 모킹하거나 테스트용 데이터로 0건/썸네일없음/잘못된id/에러 응답 케이스를 시뮬레이션\n3. 모바일 뷰포트(Playwright device emulation)와 다크모드(next-themes) 조합으로 기존 e2e/theme.spec.ts 패턴 참고해 회귀 테스트 추가\n4. npm run test:run, npm run test:e2e 전체 실행해 통과 확인",
+      "verificationCriteria": "npm run test:run과 npm run test:e2e 전체 통과. 0건/썸네일없음/잘못된id/오류응답 각 엣지 케이스 E2E 존재. 해당 작업 파일에 '## 테스트 체크리스트' 섹션 포함 필수.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. Phase 3(Task007~010)는 Phase 1~2에서 만든 라우트/타입/컴포넌트/더미데이터/Notion 클라이언트를 실제로 연결하는 단계이며, Phase 4(Task011~012)는 최적화와 배포다. 모든 Notion 연동·비즈니스 로직 태스크는 순수 함수 분리 + 유닛 테스트(node) + Playwright MCP E2E 검증을 필수로 하며, shrimp-rules.md의 커밋/테스트/데이터 계약 규칙을 준수해야 한다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다."
+    },
+    {
+      "id": "604f504d-82b8-4654-9d0f-e0175ce5f489",
+      "name": "Task011: 성능, SEO, 접근성 최적화",
+      "description": "ISR revalidate 주기 설정 및 라우트별 캐시 전략 확정(썸네일 서명 URL 만료 주기 고려). next/image 최적화 적용(sizes, priority, blur placeholder)와 번들 크기 점검. sitemap.ts, robots.ts, 기본 OG 이미지 구성. 시맨틱 마크업, 키보드 포커스 순서, 이미지 alt 점검 및 Lighthouse 기준치 확인",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "cdf6d7aa-d326-432d-a636-801102772820"
+        }
+      ],
+      "createdAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "relatedFiles": [
+        {
+          "path": "src/app/sitemap.ts",
+          "type": "CREATE",
+          "description": "동적 sitemap 생성"
+        },
+        {
+          "path": "src/app/robots.ts",
+          "type": "CREATE",
+          "description": "robots.txt 생성"
+        }
+      ],
+      "implementationGuide": "1. 각 페이지(page.tsx)에 export const revalidate = N 설정, Notion 썸네일 서명 URL 만료 주기보다 짧게 설정\n2. next/image에 sizes/priority(above-the-fold)/placeholder=blur 적용\n3. src/app/sitemap.ts, src/app/robots.ts 생성(getProjects 기반 동적 sitemap)\n4. 시맨틱 태그(h1/h2 계층, nav, main), 이미지 alt, 포커스 순서 점검 후 Lighthouse로 성능/SEO/접근성 점수 확인",
+      "verificationCriteria": "Lighthouse 성능/SEO/접근성 기준치 확인. revalidate 값이 문서화되고 썸네일 서명 URL 만료 주기와 충돌하지 않는지 확인.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. Phase 3(Task007~010)는 Phase 1~2에서 만든 라우트/타입/컴포넌트/더미데이터/Notion 클라이언트를 실제로 연결하는 단계이며, Phase 4(Task011~012)는 최적화와 배포다. 모든 Notion 연동·비즈니스 로직 태스크는 순수 함수 분리 + 유닛 테스트(node) + Playwright MCP E2E 검증을 필수로 하며, shrimp-rules.md의 커밋/테스트/데이터 계약 규칙을 준수해야 한다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다."
+    },
+    {
+      "id": "857066a7-73e7-4dd4-ad66-c467ac07b32d",
+      "name": "Task012: Vercel 배포 및 운영 구성",
+      "description": "Vercel 프로젝트 연결 및 NOTION_API_KEY, NOTION_DATABASE_ID, NEXT_PUBLIC_APP_URL 환경변수 설정. Notion Integration에 대상 Database 공유 권한이 부여되었는지 확인. 프로덕션 스모크 테스트(홈/목록/상세 3개 페이지와 외부 링크). 콘텐츠 갱신 반영 수단 정리(Revalidate Route Handler 또는 주기적 ISR). README와 로컬 실행/환경변수 문서 갱신",
+      "notes": "",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "604f504d-82b8-4654-9d0f-e0175ce5f489"
+        }
+      ],
+      "createdAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "relatedFiles": [
+        {
+          "path": "README.md",
+          "type": "TO_MODIFY",
+          "description": "로컬 실행/환경변수 문서 갱신"
+        }
+      ],
+      "implementationGuide": "1. Vercel 프로젝트를 저장소에 연결하고 환경변수(NOTION_API_KEY, NOTION_DATABASE_ID, NEXT_PUBLIC_APP_URL) 설정\n2. Notion Integration이 대상 Database에 공유되어 있는지 Notion 설정에서 확인\n3. 배포 후 홈/목록/상세 3개 페이지와 GitHub/데모 외부 링크 동작을 프로덕션에서 스모크 테스트\n4. 콘텐츠 갱신 수단(온디맨드 Revalidate Route Handler 또는 주기적 ISR) 중 하나를 선택해 구현/문서화\n5. README.md에 로컬 실행 방법과 환경변수 설정법 갱신",
+      "verificationCriteria": "프로덕션 홈/목록/상세 3페이지와 외부 링크 스모크 테스트 통과. 콘텐츠 갱신 수단이 문서화되어 있는지 확인.",
+      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. Phase 3(Task007~010)는 Phase 1~2에서 만든 라우트/타입/컴포넌트/더미데이터/Notion 클라이언트를 실제로 연결하는 단계이며, Phase 4(Task011~012)는 최적화와 배포다. 모든 Notion 연동·비즈니스 로직 태스크는 순수 함수 분리 + 유닛 테스트(node) + Playwright MCP E2E 검증을 필수로 하며, shrimp-rules.md의 커밋/테스트/데이터 계약 규칙을 준수해야 한다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다."
+    }
+  ]
+}

@@ -44,6 +44,16 @@
 				"AZURE_OPENAI_API_KEY": "YOUR_AZURE_KEY_HERE",
 				"OLLAMA_API_KEY": "YOUR_OLLAMA_API_KEY_HERE"
 			}
+		},
+
+		"shrimp-task-manager": {
+			"command": "node",
+			"args": ["C:/Users/gusej/Desktop/workspace/mcp-shrimp-task-manager/dist/index.js"],
+			"env": {
+				"DATA_DIR": "C:\\Users\\gusej\\Desktop\\workspace\\portfolio-notion-web\\shrimp_data",
+				"TEMPLATES_USE": "en",
+				"ENABLE_GUI": "false"
+			}
 		}
 	}
 }
