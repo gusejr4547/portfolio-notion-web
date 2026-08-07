@@ -102,7 +102,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
 
 ### Phase 2: UI/UX 완성 (더미 데이터 활용)
 
-- **Task 003: 프로젝트 공통 컴포넌트 및 더미 데이터 구축**
+- **Task 003: 프로젝트 공통 컴포넌트 및 더미 데이터 구축** ✅ - 완료 (See: /tasks/003-project-common-components-mock-data.md)
   - `src/lib/mock/projects.ts`에 더미 프로젝트 픽스처 작성 (대표 있음/없음, 데모 링크 없음, 썸네일 없음, 기간 미입력 등 엣지 케이스 포함)
   - `ProjectCard`(썸네일/제목/요약/기간/기술스택), `ProjectGrid`, `TechStackBadges`, `ProjectLinks`, `EmptyState` 구현
   - 기설치된 shadcn card/badge/button 재사용, 썸네일 부재 시 플레이스홀더 처리
