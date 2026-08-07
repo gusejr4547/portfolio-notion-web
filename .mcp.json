@@ -52,7 +52,7 @@
 			"env": {
 				"DATA_DIR": "C:\\Users\\gusej\\Desktop\\workspace\\portfolio-notion-web\\shrimp_data",
 				"TEMPLATES_USE": "en",
-				"ENABLE_GUI": "false"
+				"ENABLE_GUI": "true"
 			}
 		}
 	}
