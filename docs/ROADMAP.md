@@ -93,7 +93,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - `generateMetadata` 시그니처 골격 정의 (내용 채우기는 Task 009)
   - 홈/목록/상세 3개 라우트가 모두 정상 응답하는지 확인
 
-- **Task 002: 도메인 타입 정의 및 Notion 데이터 계약 설계**
+- **Task 002: 도메인 타입 정의 및 Notion 데이터 계약 설계** ✅ - 완료 (See: /tasks/002-domain-types-notion-contract.md)
   - `src/types/project.ts`에 `Project`, `ProjectSummary`, `ProjectDetail`, `ProjectPeriod` 타입 정의
   - Notion DB 속성명 매핑 상수 정의 (제목/요약/기술스택/GitHub 링크/데모 링크/썸네일/기간/대표)
   - `src/env.ts` 서버 스키마에 `NOTION_API_KEY`, `NOTION_DATABASE_ID` 추가 (t3-oss env + zod)
