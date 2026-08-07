@@ -86,7 +86,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
 
 ### Phase 1: 애플리케이션 골격 및 데이터 계약 구축
 
-- **Task 001: 프로젝트 상세 라우트 및 페이지 골격 생성** - 우선순위
+- **Task 001: 프로젝트 상세 라우트 및 페이지 골격 생성** ✅ - 완료 (See: /tasks/001-detail-route-skeleton.md)
   - `src/app/projects/[id]/page.tsx` 빈 껍데기 생성 (식별자는 Notion Page ID이므로 `[slug]`가 아닌 `[id]` 사용. 대괄호는 Next.js 동적 세그먼트 폴더명 문법이며 실제 URL에는 포함되지 않고, 해당 위치에 Notion Page ID 값이 그대로 들어감)
   - Next.js 16의 동적 세그먼트 `params` 규약을 `node_modules/next/dist/docs/`에서 확인 후 적용
   - 상세 세그먼트용 `loading.tsx`, `not-found.tsx` 배치
