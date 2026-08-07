@@ -108,7 +108,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - 기설치된 shadcn card/badge/button 재사용, 썸네일 부재 시 플레이스홀더 처리
   - 컴포넌트 유닛 테스트 `*.test.tsx` 작성 (jsdom, `src/test/utils.tsx`의 render 사용)
 
-- **Task 004: 홈/목록/상세 페이지 UI 완성 (더미 데이터)**
+- **Task 004: 홈/목록/상세 페이지 UI 완성 (더미 데이터)** ✅ - 완료 (See: /tasks/004-home-list-detail-pages-ui.md)
   - 홈: 히어로 문구 + 대표 프로젝트 섹션 + "전체 프로젝트 보기" CTA
   - 프로젝트 목록: 반응형 카드 그리드 (모바일 1 / 태블릿 2 / 데스크톱 3 컬럼)
   - 프로젝트 상세: 썸네일, 제목, 기간, 기술스택, 본문 영역, GitHub/데모 버튼 (데모 링크 없으면 버튼 숨김, 새 탭 + `rel="noopener noreferrer"`)
