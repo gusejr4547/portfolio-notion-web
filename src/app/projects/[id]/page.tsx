@@ -1,9 +1,15 @@
 import type { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
 
+import { NotionBlockRenderer } from "@/components/notion/notion-block-renderer";
 import { ProjectLinks } from "@/components/project/project-links";
 import { TechStackBadges } from "@/components/project/tech-stack-badges";
-import { mockProjects } from "@/lib/mock/projects";
+import {
+  getProjectById,
+  getProjectBlocks,
+  getProjects,
+  NotionDataAccessError,
+} from "@/lib/notion";
 import type { ProjectPeriod } from "@/types/project";
 
 type ProjectDetailPageProps = {
@@ -31,22 +37,43 @@ export async function generateMetadata(
   _parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { id } = await params;
-  const project = mockProjects.find((item) => item.id === id);
 
-  return {
-    title: project ? project.title : "프로젝트를 찾을 수 없습니다",
-  };
+  try {
+    const project = await getProjectById(id);
+
+    return {
+      title: project.title,
+      description: project.summary,
+      openGraph: {
+        images: project.thumbnailUrl ? [project.thumbnailUrl] : undefined,
+      },
+    };
+  } catch (error) {
+    if (error instanceof NotionDataAccessError && error.kind === "not_found") {
+      return { title: "프로젝트를 찾을 수 없습니다" };
+    }
+
+    throw error;
+  }
 }
 
 export default async function ProjectDetailPage({
   params,
 }: ProjectDetailPageProps) {
   const { id } = await params;
-  const project = mockProjects.find((item) => item.id === id);
 
-  if (!project) {
-    notFound();
+  let project;
+  try {
+    project = await getProjectById(id);
+  } catch (error) {
+    if (error instanceof NotionDataAccessError && error.kind === "not_found") {
+      notFound();
+    }
+
+    throw error;
   }
+
+  const blocks = await getProjectBlocks(id);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-24">
@@ -71,11 +98,16 @@ export default async function ProjectDetailPage({
 
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">소개</h2>
-        {/* TODO(Task005/009): Notion 블록 렌더러 도입 전까지 요약(summary)으로 본문을 임시 대체 */}
-        <p className="text-muted-foreground">{project.summary}</p>
+        <NotionBlockRenderer blocks={blocks} />
       </section>
 
       <ProjectLinks githubUrl={project.githubUrl} demoUrl={project.demoUrl} />
     </div>
   );
+}
+
+export async function generateStaticParams() {
+  const projects = await getProjects();
+
+  return projects.map((project) => ({ id: project.id }));
 }

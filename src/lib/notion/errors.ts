@@ -33,6 +33,7 @@ export function classifyNotionError(error: unknown): NotionDataAccessError {
           cause: error,
         });
       case APIErrorCode.ObjectNotFound:
+      case APIErrorCode.ValidationError:
         return new NotionDataAccessError("not_found", error.message, {
           cause: error,
         });

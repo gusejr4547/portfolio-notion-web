@@ -144,7 +144,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - 홈의 "전체 프로젝트 보기" CTA를 프로젝트 목록 페이지에 연결
   - Playwright MCP로 대표 프로젝트 노출과 카드 클릭 → 상세 이동을 확인하고 E2E 스펙에 반영
 
-- **Task 009: F002 프로젝트 상세 조회 연동**
+- **Task 009: F002 프로젝트 상세 조회 연동** ✅ - 완료 (See: /tasks/009-f002-project-detail-integration.md)
   - `generateStaticParams`로 상세 경로 생성, 상세 데이터와 본문 블록을 실제 조회로 교체
   - 존재하지 않거나 접근 불가한 id는 `notFound()`로 처리
   - `generateMetadata`에서 제목/요약/썸네일 기반 메타데이터 및 OG 태그 생성

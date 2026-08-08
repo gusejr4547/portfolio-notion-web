@@ -50,6 +50,17 @@ describe("classifyNotionError", () => {
     expect(result.kind).toBe("not_found");
   });
 
+  it("ValidationError 에러(예: id가 UUID 형식이 아님)는 kind: 'not_found'로 분류한다", () => {
+    const error = createApiResponseError(
+      APIErrorCode.ValidationError,
+      "path failed validation: path.page_id should be a valid uuid",
+    );
+
+    const result = classifyNotionError(error);
+
+    expect(result.kind).toBe("not_found");
+  });
+
   it("RateLimited 에러는 kind: 'rate_limited'로 분류한다", () => {
     const error = createApiResponseError(
       APIErrorCode.RateLimited,
