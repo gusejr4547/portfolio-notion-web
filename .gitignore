@@ -67,4 +67,7 @@ node_modules/
 
 # Task files
 # tasks.json
-# tasks/ 
+# tasks/
+
+# Shrimp Task Manager 내부 상태
+shrimp_data/
