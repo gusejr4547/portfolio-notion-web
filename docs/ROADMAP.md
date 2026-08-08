@@ -100,7 +100,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - `.env.example`에 Notion 환경변수 항목 및 발급 방법 주석 추가
   - 블록 렌더러가 지원할 Notion 블록 타입 유니온 정의 (렌더링 구현은 Task 005)
 
-### Phase 2: UI/UX 완성 (더미 데이터 활용)
+### Phase 2: UI/UX 완성 (더미 데이터 활용) ✅ - 완료
 
 - **Task 003: 프로젝트 공통 컴포넌트 및 더미 데이터 구축** ✅ - 완료 (See: /tasks/003-project-common-components-mock-data.md)
   - `src/lib/mock/projects.ts`에 더미 프로젝트 픽스처 작성 (대표 있음/없음, 데모 링크 없음, 썸네일 없음, 기간 미입력 등 엣지 케이스 포함)
@@ -115,7 +115,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - 라이트/다크 모드와 모바일 뷰포트에서 레이아웃 검증
   - `e2e/navigation.spec.ts` 확장: 홈 → 목록 → 상세 라우팅 플로우
 
-- **Task 005: Notion 블록 렌더러 컴포넌트 구현**
+- **Task 005: Notion 블록 렌더러 컴포넌트 구현** ✅ - 완료 (See: /tasks/005-notion-block-renderer.md)
   - 지원 블록: paragraph, heading_1~3, bulleted/numbered list, code, image, quote, divider, callout, bookmark
   - rich text 어노테이션 처리 (bold, italic, code, strikethrough, link)
   - 미지원 블록은 렌더링을 중단하지 않고 안전하게 무시하는 fallback 처리
