@@ -151,7 +151,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - Notion 썸네일 도메인을 `next.config.ts`의 `remotePatterns`에 등록 (files & media의 서명 URL 만료 대응 포함)
   - Playwright MCP로 상세 정보 노출, 데모 링크 없는 프로젝트의 버튼 숨김, 외부 링크 새 탭 동작을 확인하고 E2E 스펙에 반영
 
-- **Task 010: 핵심 사용자 플로우 통합 테스트**
+- **Task 010: 핵심 사용자 플로우 통합 테스트** ✅ - 완료 (See: /tasks/010-core-user-flow-integration.md)
   - 전체 여정 E2E 작성: 홈 → 상세, 홈 → 목록 → 상세 → 외부 링크
   - 엣지 케이스 검증: 프로젝트 0건, 썸네일 없음, 잘못된 id(404), Notion 오류 응답
   - 모바일 뷰포트와 다크모드 조합 회귀 검증
