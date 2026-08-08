@@ -2,6 +2,8 @@ import { ProjectGrid } from "@/components/project/project-grid";
 import { getProjects } from "@/lib/notion";
 import { sortProjectsByPeriodDesc } from "@/lib/sort-projects";
 
+export const revalidate = 600;
+
 export default async function ProjectsPage() {
   const projects = await getProjects();
   const sortedProjects = sortProjectsByPeriodDesc(projects);

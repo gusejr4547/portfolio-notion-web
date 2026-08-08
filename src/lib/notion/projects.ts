@@ -5,6 +5,7 @@ import {
   type BlockObjectResponse,
 } from "@notionhq/client";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 
 import type { Project } from "@/types/project";
 
@@ -36,10 +37,17 @@ async function fetchProjects(): Promise<Project[]> {
   }
 }
 
-export const getProjects = unstable_cache(fetchProjects, ["projects"], {
-  tags: ["projects"],
-  revalidate: 3600,
-});
+// Notion 서명 URL(prod-files-secure.s3...)은 발급 후 약 1시간 뒤 만료된다.
+// revalidate=600(10분)은 1/6 수준의 넉넉한 안전 마진이다. 단, 트래픽이 낮은 라우트는
+// stale-while-revalidate로 재검증 창을 넘겨도 즉시 갱신되지 않을 수 있어,
+// 저트래픽 구간에서는 만료된 썸네일 URL이 잠깐 노출될 잔여 위험이 있다.
+// (재검증을 능동적으로 트리거하는 온디맨드 revalidate 핸들러는 Task012에서 다룬다.)
+export const getProjects = cache(
+  unstable_cache(fetchProjects, ["projects"], {
+    tags: ["projects"],
+    revalidate: 600,
+  }),
+);
 
 async function fetchProjectById(id: string): Promise<Project> {
   try {
@@ -53,10 +61,12 @@ async function fetchProjectById(id: string): Promise<Project> {
   }
 }
 
-export const getProjectById = unstable_cache(fetchProjectById, ["project-by-id"], {
-  tags: ["projects"],
-  revalidate: 3600,
-});
+export const getProjectById = cache(
+  unstable_cache(fetchProjectById, ["project-by-id"], {
+    tags: ["projects"],
+    revalidate: 600,
+  }),
+);
 
 async function fetchProjectBlocks(id: string): Promise<BlockObjectResponse[]> {
   try {
@@ -71,7 +81,9 @@ async function fetchProjectBlocks(id: string): Promise<BlockObjectResponse[]> {
   }
 }
 
-export const getProjectBlocks = unstable_cache(fetchProjectBlocks, ["project-blocks"], {
-  tags: ["project-blocks"],
-  revalidate: 3600,
-});
+export const getProjectBlocks = cache(
+  unstable_cache(fetchProjectBlocks, ["project-blocks"], {
+    tags: ["project-blocks"],
+    revalidate: 600,
+  }),
+);

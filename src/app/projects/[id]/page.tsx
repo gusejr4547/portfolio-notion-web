@@ -12,6 +12,8 @@ import {
   NotionDataAccessError,
 } from "@/lib/notion";
 
+export const revalidate = 600;
+
 type ProjectDetailPageProps = {
   params: Promise<{ id: string }>;
 };

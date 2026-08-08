@@ -5,6 +5,8 @@ import { ProjectGrid } from "@/components/project/project-grid";
 import { getProjects } from "@/lib/notion";
 import { selectFeaturedProjects } from "@/lib/select-featured-projects";
 
+export const revalidate = 600;
+
 export default async function Home() {
   const projects = await getProjects();
   const featuredProjects = selectFeaturedProjects(projects);
