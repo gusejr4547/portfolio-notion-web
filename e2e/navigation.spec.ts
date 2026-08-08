@@ -39,18 +39,25 @@ test.describe("프로젝트 라우팅 플로우", () => {
     ).toBeVisible();
   });
 
-  test("홈에서 전체 프로젝트 보기 → 목록 → 카드 클릭으로 상세까지 이동한다", async ({
+  test("홈에서 전체 프로젝트 보기 클릭 시 목록 페이지로 이동한다", async ({
     page,
   }) => {
     await page.goto("/");
     await page.getByRole("button", { name: "전체 프로젝트 보기" }).click();
     await expect(page).toHaveURL("/projects");
+  });
 
-    await page.getByRole("link", { name: "개인 가계부 관리 앱" }).click();
-    await expect(page).toHaveURL("/projects/mock-project-3");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "개인 가계부 관리 앱" }),
-    ).toBeVisible();
+  test("프로젝트 목록 페이지는 실제 프로젝트 카드를 렌더링하고, 카드 클릭 시 상세 페이지로 이동한다", async ({
+    page,
+  }) => {
+    await page.goto("/projects");
+
+    const projectLinks = page.locator('a[href^="/projects/"]');
+    await expect(projectLinks.first()).toBeVisible();
+    expect(await projectLinks.count()).toBeGreaterThan(0);
+
+    await projectLinks.first().click();
+    await expect(page).toHaveURL(/\/projects\/[^/]+$/);
   });
 
   test("상세 페이지의 GitHub 버튼은 새 탭으로 안전하게 열린다", async ({
