@@ -4,33 +4,17 @@ import { notFound } from "next/navigation";
 import { NotionBlockRenderer } from "@/components/notion/notion-block-renderer";
 import { ProjectLinks } from "@/components/project/project-links";
 import { TechStackBadges } from "@/components/project/tech-stack-badges";
+import { formatPeriod } from "@/lib/format-period";
 import {
   getProjectById,
   getProjectBlocks,
   getProjects,
   NotionDataAccessError,
 } from "@/lib/notion";
-import type { ProjectPeriod } from "@/types/project";
 
 type ProjectDetailPageProps = {
   params: Promise<{ id: string }>;
 };
-
-/** "YYYY-MM-DD" 문자열을 "YYYY.MM"으로 슬라이싱 변환한다. */
-function formatYearMonth(date: string) {
-  return date.slice(0, 7).replace("-", ".");
-}
-
-function formatPeriod(period: ProjectPeriod | undefined) {
-  if (!period) {
-    return "기간 미정";
-  }
-
-  const start = formatYearMonth(period.start);
-  const end = period.end ? formatYearMonth(period.end) : "진행중";
-
-  return `${start} ~ ${end}`;
-}
 
 export async function generateMetadata(
   { params }: ProjectDetailPageProps,
@@ -77,14 +61,6 @@ export default async function ProjectDetailPage({
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-24">
-      {project.thumbnailUrl ? (
-        <img
-          src={project.thumbnailUrl}
-          alt={project.title}
-          className="aspect-video w-full rounded-lg object-cover"
-        />
-      ) : null}
-
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">
           {project.title}
