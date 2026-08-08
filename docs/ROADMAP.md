@@ -124,7 +124,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
 
 ### Phase 3: Notion 연동 및 핵심 기능 구현
 
-- **Task 006: Notion API 클라이언트 및 데이터 액세스 계층 구축** - 우선순위
+- **Task 006: Notion API 클라이언트 및 데이터 액세스 계층 구축** ✅ - 완료 (See: /tasks/006-notion-client-data-access.md)
   - `@notionhq/client` 설치 후 `src/lib/notion/client.ts`에 싱글턴 클라이언트 구성
   - `getProjects()`, `getProjectById(id)`, `getProjectBlocks(id)` 구현 (커서 페이지네이션으로 100건 초과 대응)
   - `mapPageToProject()` 매핑 함수 구현 및 필드 누락/타입 불일치 방어 처리
