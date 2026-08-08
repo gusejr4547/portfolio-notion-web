@@ -1,12 +1,16 @@
 import { ProjectGrid } from "@/components/project/project-grid";
-import { mockProjects } from "@/lib/mock/projects";
+import { getProjects } from "@/lib/notion";
+import { sortProjectsByPeriodDesc } from "@/lib/sort-projects";
 
-export default function ProjectsPage() {
+export default async function ProjectsPage() {
+  const projects = await getProjects();
+  const sortedProjects = sortProjectsByPeriodDesc(projects);
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-24">
       <h1 className="text-3xl font-semibold tracking-tight">프로젝트</h1>
       <div className="mt-8">
-        <ProjectGrid projects={mockProjects} />
+        <ProjectGrid projects={sortedProjects} />
       </div>
     </div>
   );
