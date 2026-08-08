@@ -26,17 +26,17 @@ test("존재하지 않는 경로는 404 페이지를 보여준다", async ({ pag
 });
 
 test.describe("프로젝트 라우팅 플로우", () => {
-  test("홈에서 대표 프로젝트 카드를 클릭하면 상세로 이동한다", async ({
+  test("홈은 대표 프로젝트 카드를 렌더링하고, 카드 클릭 시 상세 페이지로 이동한다", async ({
     page,
   }) => {
     await page.goto("/");
-    await page
-      .getByRole("link", { name: "Notion 포트폴리오 사이트" })
-      .click();
-    await expect(page).toHaveURL("/projects/mock-project-1");
-    await expect(
-      page.getByRole("heading", { level: 1, name: "Notion 포트폴리오 사이트" }),
-    ).toBeVisible();
+
+    const projectLinks = page.locator('a[href^="/projects/"]');
+    await expect(projectLinks.first()).toBeVisible();
+    expect(await projectLinks.count()).toBeGreaterThan(0);
+
+    await projectLinks.first().click();
+    await expect(page).toHaveURL(/\/projects\/[^/]+$/);
   });
 
   test("홈에서 전체 프로젝트 보기 클릭 시 목록 페이지로 이동한다", async ({

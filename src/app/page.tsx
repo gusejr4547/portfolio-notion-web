@@ -2,10 +2,12 @@ import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
 import { ProjectGrid } from "@/components/project/project-grid";
-import { mockProjects } from "@/lib/mock/projects";
+import { getProjects } from "@/lib/notion";
+import { selectFeaturedProjects } from "@/lib/select-featured-projects";
 
-export default function Home() {
-  const featuredProjects = mockProjects.filter((project) => project.featured);
+export default async function Home() {
+  const projects = await getProjects();
+  const featuredProjects = selectFeaturedProjects(projects);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 py-24">
