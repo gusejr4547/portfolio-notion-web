@@ -209,45 +209,6 @@
       "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
     },
     {
-      "id": "58036841-08ef-441d-923f-84e1fd892a5f",
-      "name": "Task006: Notion API 클라이언트 및 데이터 액세스 계층 구축",
-      "description": "@notionhq/client 설치 후 src/lib/notion/client.ts에 싱글턴 클라이언트 구성. getProjects(), getProjectById(id), getProjectBlocks(id) 구현(커서 페이지네이션으로 100건 초과 대응). mapPageToProject() 매핑 함수 구현 및 필드 누락/타입 불일치 방어 처리. 에러 핸들링(권한 오류, 레이트리밋, 네트워크 실패)과 캐시 재검증 전략 확정. Notion 응답 픽스처 기반 유닛 테스트(node, SDK 모킹) 작성",
-      "notes": "필드 누락/타입 불일치 방어 처리는 이 데이터 액세스 계층에서만 수행하고, UI 컴포넌트는 원시 Notion 응답을 직접 다루지 않는다.",
-      "status": "pending",
-      "dependencies": [
-        {
-          "taskId": "7e9d6d05-1d9c-4d51-8f86-4e5f41fc82ad"
-        }
-      ],
-      "createdAt": "2026-08-06T13:22:59.088Z",
-      "updatedAt": "2026-08-06T13:22:59.088Z",
-      "relatedFiles": [
-        {
-          "path": "src/lib/notion/client.ts",
-          "type": "CREATE",
-          "description": "Notion 클라이언트 싱글턴 및 조회 함수"
-        },
-        {
-          "path": "src/lib/notion/mappers.ts",
-          "type": "CREATE",
-          "description": "Notion 응답 -> 도메인 타입 매핑"
-        },
-        {
-          "path": "src/lib/notion/client.test.ts",
-          "type": "CREATE",
-          "description": "SDK 모킹 기반 유닛 테스트"
-        },
-        {
-          "path": "package.json",
-          "type": "TO_MODIFY",
-          "description": "@notionhq/client 의존성 추가"
-        }
-      ],
-      "implementationGuide": "1. npm install @notionhq/client\n2. src/lib/notion/client.ts에서 env.NOTION_API_KEY로 싱글턴 Client 인스턴스 생성(모듈 스코프 캐싱)\n3. getProjects()는 databases.query를 start_cursor 루프로 반복 호출해 100건 초과 시에도 전체 목록 수집\n4. getProjectById(id)는 pages.retrieve, getProjectBlocks(id)는 blocks.children.list(페이지네이션 포함)\n5. src/lib/notion/mappers.ts의 mapPageToProject()에서 Task002 매핑 상수를 사용해 Notion 원시 응답 -> Project 타입 변환, 필드 누락 시 안전한 기본값/undefined 처리\n6. 권한 오류(401/403), 레이트리밋(429, retry-after 고려), 네트워크 실패를 구분한 에러 처리 및 재검증(revalidate) 전략 정의\n7. Notion SDK를 vitest에서 모킹해 node 환경 유닛 테스트 작성",
-      "verificationCriteria": "SDK 모킹 기반으로 100건 초과 페이지네이션, 필드 누락, 권한/레이트리밋/네트워크 에러 케이스에 대한 유닛 테스트 작성. 해당 작업 파일(/tasks/006-*.md)에 '## 테스트 체크리스트' 섹션 포함 필수.",
-      "analysisResult": "Notion Database에 정리된 프로젝트 정보를 웹 포트폴리오로 노출하는 portfolio-notion-web 프로젝트의 docs/ROADMAP.md Phase 1~4(Task 001~012)를 shrimp 태스크로 1:1 매핑한다. 핵심 기능은 F001(프로젝트 목록 조회, 기간 최신순), F002(프로젝트 상세 조회, Notion 본문/기술스택/링크/썸네일/기간), F003(대표 프로젝트 하이라이트, checkbox+fallback)이며, Next.js 16(App Router, Turbopack)/React 19/TypeScript 5/TailwindCSS v4/shadcn-ui(base-nova)/@notionhq/client/Vercel 스택을 사용한다. 저장소는 현재 백지 상태(정적 히어로/플레이스홀더만 존재)이며, shrimp-rules.md에 라우팅([id] 고정)/UI(shadcn CLI)/테스트(확장자 기반 환경 분기, @/test/utils render 강제)/데이터 계약(단일 매핑 상수)/커밋 컨벤션(한국어+이모지)이 이미 명문화되어 있어 모든 태스크가 이를 준수해야 한다. Phase 2(더미데이터 UI)가 Phase 3(실제 Notion 연동) 이전에 완료되어야 하는 순서 제약이 있으며, Task001과 Task006은 로드맵상 우선순위 태스크다. 각 Task는 완료 후 /tasks/XXX-description.md 파일과 docs/ROADMAP.md에도 동일하게 기록된다(shrimp는 분석/추적 계층, /tasks/*.md는 명세/완료 기록 계층으로 병행 운영)."
-    },
-    {
       "id": "c332486c-5b70-4cf8-b502-1da55f44e615",
       "name": "Task007: F001 프로젝트 목록 조회 연동",
       "description": "src/app/projects/page.tsx를 async Server Component로 전환하고 더미 데이터를 실제 조회로 교체. 기간(시작일) 기준 최신순 정렬 로직을 순수 함수로 분리(시작일 미입력 항목 처리 규칙 포함). 정렬 함수 유닛 테스트(node) 작성. 프로젝트 0건 및 조회 실패 상태 UI 처리. Playwright MCP로 목록 렌더링과 카드 클릭 이동을 확인하고 E2E 스펙에 반영",
@@ -258,11 +219,11 @@
           "taskId": "23f66c55-5e80-474d-b984-30a269a6c238"
         },
         {
-          "taskId": "58036841-08ef-441d-923f-84e1fd892a5f"
+          "taskId": "313798dd-f78c-4c2c-88d7-5d3cd022d8a1"
         }
       ],
       "createdAt": "2026-08-06T13:23:55.272Z",
-      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-07T17:46:38.599Z",
       "relatedFiles": [
         {
           "path": "src/app/projects/page.tsx",
@@ -332,11 +293,11 @@
           "taskId": "0f5ba62f-15ca-4bd8-a0fa-2bdbce7e0d15"
         },
         {
-          "taskId": "58036841-08ef-441d-923f-84e1fd892a5f"
+          "taskId": "313798dd-f78c-4c2c-88d7-5d3cd022d8a1"
         }
       ],
       "createdAt": "2026-08-06T13:23:55.272Z",
-      "updatedAt": "2026-08-06T13:23:55.272Z",
+      "updatedAt": "2026-08-07T17:46:41.568Z",
       "relatedFiles": [
         {
           "path": "src/app/projects/[id]/page.tsx",
@@ -523,6 +484,269 @@
       "analysisResult": "Task 001: /projects/[id] 라우트 골격(page.tsx/loading.tsx/not-found.tsx) 생성 및 검증, tasks/001-detail-route-skeleton.md 작성, ROADMAP.md 갱신까지 완료하여 Phase 1 첫 우선순위 작업을 마감한다. 기존 src/app/loading.tsx, src/app/not-found.tsx, src/app/projects/page.tsx 패턴을 그대로 재사용하고, Next.js 16의 Promise 기반 params 규약을 따르며, 세그먼트 전용 error.tsx는 만들지 않는다(루트 error.tsx가 상속 처리). 비즈니스 로직이 없는 순수 스캐폴딩이므로 테스트 체크리스트 섹션은 작업 문서에서 생략한다.",
       "summary": "npm run dev로 /, /projects, /projects/test-id 3개 라우트 모두 200 응답 및 id가 본문/title에 정상 반영됨을 curl로 확인했다. npm run test:run(2 passed), npm run test:e2e(5 passed) 모두 통과해 회귀가 없다. tasks/001-detail-route-skeleton.md의 모든 체크박스를 [x]로 갱신하고 변경 요약 섹션을 추가했으며, docs/ROADMAP.md Task 001 제목에 완료 표시와 작업 파일 참조를 반영했다. 로컬 .env.local의 NOTION_DATABASE_ID가 비어 있어 검증 시 프로세스 환경변수로만 임시 값을 주입했고 파일은 수정하지 않았다.",
       "completedAt": "2026-08-07T11:28:57.167Z"
+    },
+    {
+      "id": "d9bebf8f-211f-480f-8239-fa20c5f36050",
+      "name": "Task006-1: Notion 에러 분류 계층 구현",
+      "description": "src/lib/notion/errors.ts에 NotionErrorKind 유니온 타입(\"auth\"|\"not_found\"|\"rate_limited\"|\"network\"|\"invalid_data\"|\"unknown\")과 NotionDataAccessError 클래스(kind, message, cause), classifyNotionError(error: unknown): NotionDataAccessError 함수를 구현한다. @notionhq/client의 isNotionClientError(instanceof 기반)로 SDK 에러 여부를 판별하고 APIErrorCode(Unauthorized/RestrictedResource→auth, ObjectNotFound→not_found, RateLimited→rate_limited)를 kind로 매핑한다. 이미 NotionDataAccessError인 경우 그대로 반환(idempotent), 비-SDK 에러는 메시지 패턴(fetch/network/ECONNRESET 등)으로 network 판별, 그 외 unknown. Task006 전체 서브태스크 중 의존성이 없는 최초 단계로, 이후 모든 조회 함수가 이 에러 타입으로 통일된 에러를 던진다.",
+      "notes": "src/lib/notion/ 디렉터리 최초 생성 파일. 이후 서브태스크(mapper 제외)가 이 에러 타입을 재사용한다.",
+      "status": "completed",
+      "dependencies": [],
+      "createdAt": "2026-08-07T17:46:12.471Z",
+      "updatedAt": "2026-08-08T04:08:59.491Z",
+      "relatedFiles": [
+        {
+          "path": "src/lib/notion/errors.ts",
+          "type": "CREATE",
+          "description": "NotionErrorKind, NotionDataAccessError, classifyNotionError"
+        },
+        {
+          "path": "src/lib/notion/errors.test.ts",
+          "type": "CREATE",
+          "description": "APIErrorCode별 분류 및 idempotent 검증"
+        }
+      ],
+      "implementationGuide": "pseudocode:\nexport type NotionErrorKind = \"auth\"|\"not_found\"|\"rate_limited\"|\"network\"|\"invalid_data\"|\"unknown\";\nexport class NotionDataAccessError extends Error { readonly kind: NotionErrorKind; constructor(kind, message, options?) { super(message, options); this.name=\"NotionDataAccessError\"; this.kind=kind; } }\nexport function classifyNotionError(error: unknown): NotionDataAccessError {\n  if (error instanceof NotionDataAccessError) return error;\n  if (isNotionClientError(error)) { switch(error.code) { case Unauthorized: case RestrictedResource: return new NotionDataAccessError(\"auth\", ...); case ObjectNotFound: return new NotionDataAccessError(\"not_found\", ...); case RateLimited: return new NotionDataAccessError(\"rate_limited\", ...); default: return new NotionDataAccessError(\"unknown\", ...); } }\n  if (network-like) return new NotionDataAccessError(\"network\", ...);\n  return new NotionDataAccessError(\"unknown\", ...);\n}\n테스트(errors.test.ts)는 @notionhq/client의 실제 APIErrorCode/APIResponseError/isNotionClientError를 그대로 import해 real instanceof 에러 인스턴스를 생성/검증한다(모킹 불필요, 순수 유닛). Korean describe/it, 명시적 vitest import 컨벤션 준수.",
+      "verificationCriteria": "APIErrorCode.Unauthorized/RestrictedResource→auth, ObjectNotFound→not_found, RateLimited→rate_limited로 분류됨을 real APIResponseError 인스턴스로 검증. 순수 TypeError→network 폴백 검증. 이미 NotionDataAccessError인 입력은 그대로 반환됨을 검증. npm run test:run 통과.",
+      "analysisResult": "Task006(Notion API 클라이언트 및 데이터 액세스 계층 구축, ID 58036841-08ef-441d-923f-84e1fd892a5f)을 6개 서브태스크로 세분화한다. 목표: src/lib/notion/ 아래에 싱글턴 Notion 클라이언트, database_id→data_source_id 해석, 에러 분류, Notion 페이지→Project 매핑, 목록/단건/블록 조회 함수(캐싱 포함)를 구축하고 각각 Vitest node 환경(*.test.ts) 유닛 테스트로 검증한다. src/types/project.ts(NOTION_PROPERTY 등)와 src/env.ts(NOTION_API_KEY/NOTION_DATABASE_ID)는 이미 Task002에서 정의되어 있으므로 그대로 재사용하고 수정하지 않는다. src/lib/mock/projects.ts(Task003)의 mockProjects 6건을 mapper 테스트의 기대값(expected output)으로 재사용해 Phase2 픽스처를 Phase3 테스트에서 중복 없이 재사용한다. @notionhq/client는 v5 계열(dataSources.query 기반, databases.query 아님)이며 database_id로 먼저 data_source_id를 해석해야 한다. Next.js 16은 cacheComponents:true가 없는 \"Previous Model\" 캐싱을 사용하므로 unstable_cache(next/cache)로 캐싱하며 \"use cache\"/cacheTag는 사용하지 않는다. 테스트에서는 unstable_cache(Next 렌더링 컨텍스트 필요, 없으면 invariant 에러)와 @/env(로컬 NOTION_DATABASE_ID 비어있음)를 반드시 모킹해야 한다. src/app/** 페이지 연결은 이번 범위 밖(Task007/008/009). 각 서브태스크는 nextjs-developer 서브에이전트에게 개별 위임되어 구현되며, 실제 코드 구현 전 이 서브태스크 목록 자체가 최종 산출물이다.",
+      "summary": "src/lib/notion/errors.ts에 NotionErrorKind(auth/not_found/rate_limited/network/invalid_data/unknown), NotionDataAccessError 클래스, classifyNotionError()를 구현. @notionhq/client 5.24.0을 설치하고 isNotionClientError/APIErrorCode로 SDK 에러를 분류(Unauthorized/RestrictedResource→auth, ObjectNotFound→not_found, RateLimited→rate_limited), 비-SDK 에러는 TypeError/네트워크 메시지 패턴→network, 그 외 unknown, 이미 분류된 에러는 idempotent 반환. errors.test.ts에서 실제 APIResponseError 인스턴스로 7개 케이스 검증(모킹 없는 순수 유닛 테스트, 저장소 최초의 node 환경 *.test.ts). npm run test:run 7 파일/19 테스트 전체 통과, npx tsc --noEmit 타입 에러 없음 확인. mapper.ts/client.ts/data-source.ts/projects.ts/src/app 등 다른 서브태스크 파일은 손대지 않음.",
+      "completedAt": "2026-08-08T04:08:59.488Z"
+    },
+    {
+      "id": "e60106e5-dfd0-4e2d-882e-678ece00b829",
+      "name": "Task006-2: Notion 페이지→Project 매퍼 구현",
+      "description": "src/lib/notion/mapper.ts에 mapPageToProject(page: PageObjectResponse): Project를 구현한다. src/types/project.ts의 NOTION_PROPERTY 상수로만 속성에 접근하며, title 없음/빈 rich_text 배열이면 명시적으로 throw(유일한 non-recoverable 케이스), 그 외 모든 필드(summary/techStack/githubUrl/demoUrl/thumbnailUrl/period/featured)는 누락·타입 불일치 시 안전한 기본값으로 폴백하고 절대 throw하지 않는다. src/lib/mock/projects.ts의 mockProjects 6건과 1:1 대응하는 raw Notion 페이지 픽스처를 __fixtures__/notion-pages.fixtures.ts에 작성하여 mapPageToProject 결과가 mockProjects[i]와 toEqual 일치함을 검증한다.",
+      "notes": "SDK 런타임을 import하지 않는 순수 함수 — client.ts/@/env에 의존하지 않으므로 client.ts 서브태스크와 독립적으로 병행 설계 가능하나 구현은 순차 진행.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-08-07T17:46:12.471Z",
+      "updatedAt": "2026-08-07T17:46:12.471Z",
+      "relatedFiles": [
+        {
+          "path": "src/lib/notion/mapper.ts",
+          "type": "CREATE",
+          "description": "mapPageToProject 및 private extractor 함수들"
+        },
+        {
+          "path": "src/lib/notion/mapper.test.ts",
+          "type": "CREATE",
+          "description": "6건 미러 + malformed 케이스 검증"
+        },
+        {
+          "path": "src/lib/notion/__fixtures__/notion-pages.fixtures.ts",
+          "type": "CREATE",
+          "description": "raw PageObjectResponse 픽스처"
+        },
+        {
+          "path": "src/types/project.ts",
+          "type": "REFERENCE",
+          "description": "NOTION_PROPERTY, Project 타입 (수정 금지)"
+        },
+        {
+          "path": "src/lib/mock/projects.ts",
+          "type": "REFERENCE",
+          "description": "mockProjects 6건 (기대값으로 재사용, 수정 금지)"
+        }
+      ],
+      "implementationGuide": "pseudocode:\nimport type { PageObjectResponse } from \"@notionhq/client\"; // 타입만 import, SDK 런타임 import 없음\nimport { NOTION_PROPERTY, type Project } from \"@/types/project\";\nexport function mapPageToProject(page: PageObjectResponse): Project {\n  const title = extractTitle(page.properties[NOTION_PROPERTY.title]);\n  if (!title) throw new Error(`Notion page ${page.id} is missing a usable title`);\n  return { id: page.id, title,\n    summary: extractRichText(...) ?? \"\",\n    techStack: extractMultiSelect(...) ?? [],\n    githubUrl: extractUrl(...) ?? \"\",\n    demoUrl: extractUrl(...) ?? undefined,\n    thumbnailUrl: extractFileUrl(...), // files[0], external.url | file.url 분기\n    period: extractPeriod(...), // date null/속성없음 -> undefined, date.end null -> undefined\n    featured: extractCheckbox(...) ?? false };\n}\n각 extractX는 property.type 불일치 시 조용히 폴백하는 private 함수. __fixtures__/notion-pages.fixtures.ts에는 6개 미러 픽스처 + malformed 변형(title 없음/빈값, techStack 타입 불일치, summary 없음, url null, thumbnail file타입/빈배열, period null/속성없음, featured 없음/타입불일치)을 포함.",
+      "verificationCriteria": "6개 미러 픽스처 각각이 mockProjects[i]와 toEqual 일치. title 누락/빈값 시 throw. techStack/summary/githubUrl/demoUrl/thumbnailUrl/period/featured 각각의 malformed 케이스가 문서화된 안전한 폴백값을 반환하며 throw하지 않음. npm run test:run 통과.",
+      "analysisResult": "Task006(Notion API 클라이언트 및 데이터 액세스 계층 구축, ID 58036841-08ef-441d-923f-84e1fd892a5f)을 6개 서브태스크로 세분화한다. 목표: src/lib/notion/ 아래에 싱글턴 Notion 클라이언트, database_id→data_source_id 해석, 에러 분류, Notion 페이지→Project 매핑, 목록/단건/블록 조회 함수(캐싱 포함)를 구축하고 각각 Vitest node 환경(*.test.ts) 유닛 테스트로 검증한다. src/types/project.ts(NOTION_PROPERTY 등)와 src/env.ts(NOTION_API_KEY/NOTION_DATABASE_ID)는 이미 Task002에서 정의되어 있으므로 그대로 재사용하고 수정하지 않는다. src/lib/mock/projects.ts(Task003)의 mockProjects 6건을 mapper 테스트의 기대값(expected output)으로 재사용해 Phase2 픽스처를 Phase3 테스트에서 중복 없이 재사용한다. @notionhq/client는 v5 계열(dataSources.query 기반, databases.query 아님)이며 database_id로 먼저 data_source_id를 해석해야 한다. Next.js 16은 cacheComponents:true가 없는 \"Previous Model\" 캐싱을 사용하므로 unstable_cache(next/cache)로 캐싱하며 \"use cache\"/cacheTag는 사용하지 않는다. 테스트에서는 unstable_cache(Next 렌더링 컨텍스트 필요, 없으면 invariant 에러)와 @/env(로컬 NOTION_DATABASE_ID 비어있음)를 반드시 모킹해야 한다. src/app/** 페이지 연결은 이번 범위 밖(Task007/008/009). 각 서브태스크는 nextjs-developer 서브에이전트에게 개별 위임되어 구현되며, 실제 코드 구현 전 이 서브태스크 목록 자체가 최종 산출물이다."
+    },
+    {
+      "id": "9018a523-539f-4d50-a94b-7d2ba33e565e",
+      "name": "Task006-3: @notionhq/client 설치 및 싱글턴 클라이언트 구성",
+      "description": "npm install @notionhq/client로 패키지를 설치한 뒤(v5 계열, dataSources.query 기반 API 확인), src/lib/notion/client.ts에 env.NOTION_API_KEY와 고정 notionVersion(\"2025-09-03\")으로 구성된 싱글턴 Client 인스턴스를 모듈 스코프로 export한다. 캐싱/조회 로직은 포함하지 않고 클라이언트 구성에만 집중한다.",
+      "notes": ".env.local의 NOTION_DATABASE_ID가 비어있으므로 client.ts를 import하는 모든 테스트 파일(이 서브태스크 이후의 data-source.test.ts, projects.test.ts 포함)은 반드시 @/env를 모킹해야 createEnv() 시점의 ZodError를 피할 수 있다.",
+      "status": "pending",
+      "dependencies": [],
+      "createdAt": "2026-08-07T17:46:12.471Z",
+      "updatedAt": "2026-08-07T17:46:12.471Z",
+      "relatedFiles": [
+        {
+          "path": "package.json",
+          "type": "TO_MODIFY",
+          "description": "@notionhq/client 의존성 추가"
+        },
+        {
+          "path": "src/lib/notion/client.ts",
+          "type": "CREATE",
+          "description": "싱글턴 Notion Client"
+        },
+        {
+          "path": "src/lib/notion/client.test.ts",
+          "type": "CREATE",
+          "description": "싱글턴/생성 인자 검증"
+        },
+        {
+          "path": "src/env.ts",
+          "type": "REFERENCE",
+          "description": "NOTION_API_KEY 등 (수정 금지)"
+        }
+      ],
+      "implementationGuide": "pseudocode:\nimport { Client } from \"@notionhq/client\";\nimport { env } from \"@/env\";\nexport const notion = new Client({ auth: env.NOTION_API_KEY, notionVersion: \"2025-09-03\" });\n설치 후 node_modules/@notionhq/client의 실제 타입 선언을 확인해 dataSources.query/databases.retrieve/pages.retrieve/blocks.children.list/collectPaginatedAPI/isFullPage/isFullBlock/APIErrorCode/isNotionClientError export가 예상대로 존재하는지 재검증한다(SDK 버전이 예상과 다를 경우 이후 서브태스크에 즉시 반영).\nclient.test.ts에서는 vi.mock(\"@/env\", () => ({ env: { NOTION_API_KEY: \"test-key\", NOTION_DATABASE_ID: \"test-db-id\", NODE_ENV: \"test\", NEXT_PUBLIC_APP_URL: \"http://localhost:3000\" } }))로 env를 모킹하고, 모듈을 두 번 import해도 동일 참조(싱글턴)임을 검증하며, new Client가 auth/notionVersion과 함께 호출되었는지 검증한다.",
+      "verificationCriteria": "npm install 성공 후 @notionhq/client가 package.json dependencies에 추가됨. notion 싱글턴이 모듈 스코프에서 1회만 생성되고 auth/notionVersion이 올바르게 전달됨을 테스트로 검증. npm run test:run 통과.",
+      "analysisResult": "Task006(Notion API 클라이언트 및 데이터 액세스 계층 구축, ID 58036841-08ef-441d-923f-84e1fd892a5f)을 6개 서브태스크로 세분화한다. 목표: src/lib/notion/ 아래에 싱글턴 Notion 클라이언트, database_id→data_source_id 해석, 에러 분류, Notion 페이지→Project 매핑, 목록/단건/블록 조회 함수(캐싱 포함)를 구축하고 각각 Vitest node 환경(*.test.ts) 유닛 테스트로 검증한다. src/types/project.ts(NOTION_PROPERTY 등)와 src/env.ts(NOTION_API_KEY/NOTION_DATABASE_ID)는 이미 Task002에서 정의되어 있으므로 그대로 재사용하고 수정하지 않는다. src/lib/mock/projects.ts(Task003)의 mockProjects 6건을 mapper 테스트의 기대값(expected output)으로 재사용해 Phase2 픽스처를 Phase3 테스트에서 중복 없이 재사용한다. @notionhq/client는 v5 계열(dataSources.query 기반, databases.query 아님)이며 database_id로 먼저 data_source_id를 해석해야 한다. Next.js 16은 cacheComponents:true가 없는 \"Previous Model\" 캐싱을 사용하므로 unstable_cache(next/cache)로 캐싱하며 \"use cache\"/cacheTag는 사용하지 않는다. 테스트에서는 unstable_cache(Next 렌더링 컨텍스트 필요, 없으면 invariant 에러)와 @/env(로컬 NOTION_DATABASE_ID 비어있음)를 반드시 모킹해야 한다. src/app/** 페이지 연결은 이번 범위 밖(Task007/008/009). 각 서브태스크는 nextjs-developer 서브에이전트에게 개별 위임되어 구현되며, 실제 코드 구현 전 이 서브태스크 목록 자체가 최종 산출물이다."
+    },
+    {
+      "id": "dbeef5ee-f991-4b98-92e8-914d759cfe81",
+      "name": "Task006-4: database_id → data_source_id 해석 계층 구현",
+      "description": "src/lib/notion/data-source.ts에 notion.databases.retrieve({ database_id: env.NOTION_DATABASE_ID })를 호출해 응답의 data_sources[0].id를 추출하는 resolveDataSourceId()를 구현하고, unstable_cache(next/cache)로 감싼 getDataSourceId를 export한다(cache key [\"notion-data-source-id\"], tags:[\"notion-schema\"], revalidate: 86400). data_sources가 비어있거나 조회 실패 시 classifyNotionError로 분류된 에러를 던진다.",
+      "notes": "unstable_cache는 Next 렌더링 컨텍스트 없이 직접 호출되면 'Invariant: incrementalCache missing in unstable_cache'를 던지므로 테스트에서 반드시 모킹 필요.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "9018a523-539f-4d50-a94b-7d2ba33e565e"
+        },
+        {
+          "taskId": "d9bebf8f-211f-480f-8239-fa20c5f36050"
+        }
+      ],
+      "createdAt": "2026-08-07T17:46:12.471Z",
+      "updatedAt": "2026-08-07T17:46:12.471Z",
+      "relatedFiles": [
+        {
+          "path": "src/lib/notion/data-source.ts",
+          "type": "CREATE",
+          "description": "database_id -> data_source_id 해석 + 캐싱"
+        },
+        {
+          "path": "src/lib/notion/data-source.test.ts",
+          "type": "CREATE",
+          "description": "정상/빈 배열/조회 실패 케이스 검증"
+        },
+        {
+          "path": "src/lib/notion/client.ts",
+          "type": "DEPENDENCY",
+          "description": "notion 싱글턴"
+        },
+        {
+          "path": "src/lib/notion/errors.ts",
+          "type": "DEPENDENCY",
+          "description": "classifyNotionError"
+        }
+      ],
+      "implementationGuide": "pseudocode:\nimport { unstable_cache } from \"next/cache\";\nimport { notion } from \"./client\";\nimport { env } from \"@/env\";\nimport { classifyNotionError } from \"./errors\";\nasync function resolveDataSourceId(): Promise<string> {\n  try { const db = await notion.databases.retrieve({ database_id: env.NOTION_DATABASE_ID });\n    const ds = \"data_sources\" in db ? db.data_sources[0] : undefined;\n    if (!ds) throw new Error(`Notion database ${env.NOTION_DATABASE_ID} has no data sources`);\n    return ds.id;\n  } catch (error) { throw classifyNotionError(error); }\n}\nexport const getDataSourceId = unstable_cache(resolveDataSourceId, [\"notion-data-source-id\"], { tags: [\"notion-schema\"], revalidate: 86400 });\n테스트(data-source.test.ts)는 vi.mock(\"@notionhq/client\", ...)로 Client의 databases.retrieve만 stub하고 나머지(APIErrorCode 등)는 실제 구현 유지, vi.mock(\"next/cache\", () => ({ unstable_cache: (fn) => fn }))로 identity passthrough, vi.mock(\"@/env\", ...)로 env 모킹.",
+      "verificationCriteria": "databases.retrieve 응답에서 data_sources[0].id를 정상 추출. data_sources가 빈 배열이거나 databases.retrieve가 reject하면 NotionDataAccessError로 분류되어 throw됨. npm run test:run 통과.",
+      "analysisResult": "Task006(Notion API 클라이언트 및 데이터 액세스 계층 구축, ID 58036841-08ef-441d-923f-84e1fd892a5f)을 6개 서브태스크로 세분화한다. 목표: src/lib/notion/ 아래에 싱글턴 Notion 클라이언트, database_id→data_source_id 해석, 에러 분류, Notion 페이지→Project 매핑, 목록/단건/블록 조회 함수(캐싱 포함)를 구축하고 각각 Vitest node 환경(*.test.ts) 유닛 테스트로 검증한다. src/types/project.ts(NOTION_PROPERTY 등)와 src/env.ts(NOTION_API_KEY/NOTION_DATABASE_ID)는 이미 Task002에서 정의되어 있으므로 그대로 재사용하고 수정하지 않는다. src/lib/mock/projects.ts(Task003)의 mockProjects 6건을 mapper 테스트의 기대값(expected output)으로 재사용해 Phase2 픽스처를 Phase3 테스트에서 중복 없이 재사용한다. @notionhq/client는 v5 계열(dataSources.query 기반, databases.query 아님)이며 database_id로 먼저 data_source_id를 해석해야 한다. Next.js 16은 cacheComponents:true가 없는 \"Previous Model\" 캐싱을 사용하므로 unstable_cache(next/cache)로 캐싱하며 \"use cache\"/cacheTag는 사용하지 않는다. 테스트에서는 unstable_cache(Next 렌더링 컨텍스트 필요, 없으면 invariant 에러)와 @/env(로컬 NOTION_DATABASE_ID 비어있음)를 반드시 모킹해야 한다. src/app/** 페이지 연결은 이번 범위 밖(Task007/008/009). 각 서브태스크는 nextjs-developer 서브에이전트에게 개별 위임되어 구현되며, 실제 코드 구현 전 이 서브태스크 목록 자체가 최종 산출물이다."
+    },
+    {
+      "id": "9e322876-3cd5-4317-93d2-858bfc7a44d0",
+      "name": "Task006-5: getProjects/getProjectById/getProjectBlocks 조회 함수 및 캐싱 구현",
+      "description": "src/lib/notion/projects.ts에 getProjects()(커서 페이지네이션으로 100건 초과 대응, collectPaginatedAPI + notion.dataSources.query, 개별 페이지 매핑 실패는 skip), getProjectById(id)(notion.pages.retrieve, 매핑 실패 시 전파), getProjectBlocks(id)(notion.blocks.children.list, isFullBlock 필터, 커서 페이지네이션)를 구현하고 각각 unstable_cache(revalidate 3600, tags [\"projects\"] 또는 [\"project-blocks\"])로 래핑한다. src/lib/notion/index.ts에서 공개 API를 배럴 re-export한다.",
+      "notes": "getProjects는 ProjectSummary가 아닌 Project[] 전체를 반환(Pick 타입이므로 상위 호환). 이 서브태스크가 Task006의 핵심 공개 API 표면을 완성한다.",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "d9bebf8f-211f-480f-8239-fa20c5f36050"
+        },
+        {
+          "taskId": "e60106e5-dfd0-4e2d-882e-678ece00b829"
+        },
+        {
+          "taskId": "9018a523-539f-4d50-a94b-7d2ba33e565e"
+        },
+        {
+          "taskId": "dbeef5ee-f991-4b98-92e8-914d759cfe81"
+        }
+      ],
+      "createdAt": "2026-08-07T17:46:12.471Z",
+      "updatedAt": "2026-08-07T17:46:12.471Z",
+      "relatedFiles": [
+        {
+          "path": "src/lib/notion/projects.ts",
+          "type": "CREATE",
+          "description": "getProjects/getProjectById/getProjectBlocks"
+        },
+        {
+          "path": "src/lib/notion/projects.test.ts",
+          "type": "CREATE",
+          "description": "페이지네이션/부분실패/에러전파/블록필터 검증"
+        },
+        {
+          "path": "src/lib/notion/index.ts",
+          "type": "CREATE",
+          "description": "공개 API 배럴"
+        },
+        {
+          "path": "src/lib/notion/__fixtures__/notion-blocks.fixtures.ts",
+          "type": "CREATE",
+          "description": "raw BlockObjectResponse 픽스처"
+        },
+        {
+          "path": "src/lib/notion/__fixtures__/notion-errors.fixtures.ts",
+          "type": "CREATE",
+          "description": "real APIResponseError 인스턴스 팩토리 + TypeError"
+        },
+        {
+          "path": "src/lib/notion/mapper.ts",
+          "type": "DEPENDENCY",
+          "description": "mapPageToProject"
+        },
+        {
+          "path": "src/lib/notion/data-source.ts",
+          "type": "DEPENDENCY",
+          "description": "getDataSourceId"
+        },
+        {
+          "path": "src/lib/notion/client.ts",
+          "type": "DEPENDENCY",
+          "description": "notion 싱글턴"
+        },
+        {
+          "path": "src/lib/notion/errors.ts",
+          "type": "DEPENDENCY",
+          "description": "classifyNotionError"
+        }
+      ],
+      "implementationGuide": "pseudocode:\nimport { collectPaginatedAPI, isFullPage, isFullBlock } from \"@notionhq/client\";\nimport { unstable_cache } from \"next/cache\";\nimport { notion } from \"./client\"; import { getDataSourceId } from \"./data-source\"; import { mapPageToProject } from \"./mapper\"; import { classifyNotionError } from \"./errors\";\nasync function fetchProjects() { const dataSourceId = await getDataSourceId(); const pages = await collectPaginatedAPI((args) => notion.dataSources.query(args), { data_source_id: dataSourceId, page_size: 100 }); const projects=[]; for (const page of pages) { if (!isFullPage(page)) continue; try { projects.push(mapPageToProject(page)); } catch(e) { console.warn(`skip ${page.id}`, e); } } return projects; }\nexport const getProjects = unstable_cache(async () => { try { return await fetchProjects(); } catch(e) { throw classifyNotionError(e); } }, [\"projects\"], { tags: [\"projects\"], revalidate: 3600 });\n(getProjectById, getProjectBlocks는 동일 패턴, id를 인자로 받는 unstable_cache 래핑 함수를 별도 export 함수로 감싸 시그니처 유지)\n정렬 로직은 포함하지 않음(Task007에서 순수 함수로 분리 예정). 중첩 블록(has_children) 재귀 조회는 범위 밖(주석으로 명시).\n테스트(projects.test.ts)는 __fixtures__/notion-blocks.fixtures.ts, __fixtures__/notion-errors.fixtures.ts를 사용해 100건 초과 페이지네이션(2회 커서 호출, 110건), 개별 매핑 실패 skip, ObjectNotFound/Unauthorized/RestrictedResource/RateLimited/네트워크 실패 각각의 kind 전파, isFullBlock 필터링을 검증한다.",
+      "verificationCriteria": "100건 초과(110건) 페이지네이션이 커서를 따라 전체 수집됨. 목록 중 1건 매핑 실패해도 나머지는 정상 반환됨. getProjectById가 not_found/auth/rate_limited/network 에러를 NotionDataAccessError.kind로 정확히 전파함. getProjectBlocks가 isFullBlock으로 partial block을 걸러냄. npm run test:run 통과.",
+      "analysisResult": "Task006(Notion API 클라이언트 및 데이터 액세스 계층 구축, ID 58036841-08ef-441d-923f-84e1fd892a5f)을 6개 서브태스크로 세분화한다. 목표: src/lib/notion/ 아래에 싱글턴 Notion 클라이언트, database_id→data_source_id 해석, 에러 분류, Notion 페이지→Project 매핑, 목록/단건/블록 조회 함수(캐싱 포함)를 구축하고 각각 Vitest node 환경(*.test.ts) 유닛 테스트로 검증한다. src/types/project.ts(NOTION_PROPERTY 등)와 src/env.ts(NOTION_API_KEY/NOTION_DATABASE_ID)는 이미 Task002에서 정의되어 있으므로 그대로 재사용하고 수정하지 않는다. src/lib/mock/projects.ts(Task003)의 mockProjects 6건을 mapper 테스트의 기대값(expected output)으로 재사용해 Phase2 픽스처를 Phase3 테스트에서 중복 없이 재사용한다. @notionhq/client는 v5 계열(dataSources.query 기반, databases.query 아님)이며 database_id로 먼저 data_source_id를 해석해야 한다. Next.js 16은 cacheComponents:true가 없는 \"Previous Model\" 캐싱을 사용하므로 unstable_cache(next/cache)로 캐싱하며 \"use cache\"/cacheTag는 사용하지 않는다. 테스트에서는 unstable_cache(Next 렌더링 컨텍스트 필요, 없으면 invariant 에러)와 @/env(로컬 NOTION_DATABASE_ID 비어있음)를 반드시 모킹해야 한다. src/app/** 페이지 연결은 이번 범위 밖(Task007/008/009). 각 서브태스크는 nextjs-developer 서브에이전트에게 개별 위임되어 구현되며, 실제 코드 구현 전 이 서브태스크 목록 자체가 최종 산출물이다."
+    },
+    {
+      "id": "313798dd-f78c-4c2c-88d7-5d3cd022d8a1",
+      "name": "Task006-6: 통합 검증 및 작업 문서화",
+      "description": "Task006-1~5의 모든 산출물에 대해 npm run test:run과 npm run build를 실행해 전체 통과를 확인한다. tasks/006-notion-client-data-access.md 작업 파일을 tasks/004-home-list-detail-pages-ui.md 형식(고수준 명세서/관련 파일/수락 기준/구현 단계/변경 요약/검증 결과)으로 작성하되, Task006 원본 verificationCriteria가 명시한 대로 '## 테스트 체크리스트' 섹션을 필수 포함한다. docs/ROADMAP.md의 Task006 항목 제목에 '✅ - 완료'와 참조 링크를 추가한다.",
+      "notes": "이 서브태스크가 Task006 전체의 최종 산출물이며, 기존 Task007/Task009가 원본 Task006 ID에 걸어둔 dependency는 이 서브태스크로 재연결되어야 한다(별도 update_task 조치 필요, 이 서브태스크 자체의 구현 범위는 아님).",
+      "status": "pending",
+      "dependencies": [
+        {
+          "taskId": "d9bebf8f-211f-480f-8239-fa20c5f36050"
+        },
+        {
+          "taskId": "e60106e5-dfd0-4e2d-882e-678ece00b829"
+        },
+        {
+          "taskId": "9018a523-539f-4d50-a94b-7d2ba33e565e"
+        },
+        {
+          "taskId": "dbeef5ee-f991-4b98-92e8-914d759cfe81"
+        },
+        {
+          "taskId": "9e322876-3cd5-4317-93d2-858bfc7a44d0"
+        }
+      ],
+      "createdAt": "2026-08-07T17:46:12.471Z",
+      "updatedAt": "2026-08-07T17:46:12.471Z",
+      "relatedFiles": [
+        {
+          "path": "tasks/006-notion-client-data-access.md",
+          "type": "CREATE",
+          "description": "Task006 작업 문서 (테스트 체크리스트 섹션 필수)"
+        },
+        {
+          "path": "docs/ROADMAP.md",
+          "type": "TO_MODIFY",
+          "description": "Task006 완료 표시"
+        },
+        {
+          "path": "tasks/004-home-list-detail-pages-ui.md",
+          "type": "REFERENCE",
+          "description": "작업 문서 형식 참조"
+        }
+      ],
+      "implementationGuide": "1. npm run test:run 실행, src/lib/notion/**/*.test.ts 전부 포함 전체 통과 확인.\n2. npm run build 실행, 타입 에러 없이 빌드 성공 확인(아직 src/app/**에서 참조하지 않으므로 번들에는 포함 안 되지만 타입 체크는 통과해야 함).\n3. tasks/006-notion-client-data-access.md 작성: 고수준 명세서(데이터 액세스 계층 범위, Task007~009와의 경계), 관련 파일(src/lib/notion/** 전체), 수락 기준(체크박스), 구현 단계, '## 테스트 체크리스트'(SDK 모킹 기반 페이지네이션/필드누락/권한/레이트리밋/네트워크 에러 케이스 목록), 변경 요약, 검증 결과.\n4. docs/ROADMAP.md의 '- **Task 006: ...** - 우선순위' 줄을 '- **Task 006: ...** ✅ - 완료 (See: /tasks/006-notion-client-data-access.md)'로 갱신.",
+      "verificationCriteria": "npm run test:run, npm run build 모두 성공. tasks/006-notion-client-data-access.md에 '## 테스트 체크리스트' 섹션 포함 및 체크박스 전부 체크됨. docs/ROADMAP.md Task006 항목에 완료 표시 반영됨.",
+      "analysisResult": "Task006(Notion API 클라이언트 및 데이터 액세스 계층 구축, ID 58036841-08ef-441d-923f-84e1fd892a5f)을 6개 서브태스크로 세분화한다. 목표: src/lib/notion/ 아래에 싱글턴 Notion 클라이언트, database_id→data_source_id 해석, 에러 분류, Notion 페이지→Project 매핑, 목록/단건/블록 조회 함수(캐싱 포함)를 구축하고 각각 Vitest node 환경(*.test.ts) 유닛 테스트로 검증한다. src/types/project.ts(NOTION_PROPERTY 등)와 src/env.ts(NOTION_API_KEY/NOTION_DATABASE_ID)는 이미 Task002에서 정의되어 있으므로 그대로 재사용하고 수정하지 않는다. src/lib/mock/projects.ts(Task003)의 mockProjects 6건을 mapper 테스트의 기대값(expected output)으로 재사용해 Phase2 픽스처를 Phase3 테스트에서 중복 없이 재사용한다. @notionhq/client는 v5 계열(dataSources.query 기반, databases.query 아님)이며 database_id로 먼저 data_source_id를 해석해야 한다. Next.js 16은 cacheComponents:true가 없는 \"Previous Model\" 캐싱을 사용하므로 unstable_cache(next/cache)로 캐싱하며 \"use cache\"/cacheTag는 사용하지 않는다. 테스트에서는 unstable_cache(Next 렌더링 컨텍스트 필요, 없으면 invariant 에러)와 @/env(로컬 NOTION_DATABASE_ID 비어있음)를 반드시 모킹해야 한다. src/app/** 페이지 연결은 이번 범위 밖(Task007/008/009). 각 서브태스크는 nextjs-developer 서브에이전트에게 개별 위임되어 구현되며, 실제 코드 구현 전 이 서브태스크 목록 자체가 최종 산출물이다."
     }
   ]
 }
