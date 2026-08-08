@@ -131,7 +131,7 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
   - 에러 핸들링 정의 (권한 오류, 레이트리밋, 네트워크 실패)와 캐시 재검증 전략 확정
   - Notion 응답 픽스처 기반 유닛 테스트 `*.test.ts` 작성 (node, SDK 모킹)
 
-- **Task 007: F001 프로젝트 목록 조회 연동**
+- **Task 007: F001 프로젝트 목록 조회 연동** ✅ - 완료 (See: /tasks/007-f001-project-list-integration.md)
   - `src/app/projects/page.tsx`를 async Server Component로 전환하고 더미 데이터를 실제 조회로 교체
   - 기간(시작일) 기준 최신순 정렬 로직을 순수 함수로 분리 (시작일 미입력 항목 처리 규칙 포함)
   - 정렬 함수 유닛 테스트 `*.test.ts` 작성 (node)
