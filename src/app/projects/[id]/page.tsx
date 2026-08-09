@@ -20,18 +20,29 @@ type ProjectDetailPageProps = {
 
 export async function generateMetadata(
   { params }: ProjectDetailPageProps,
-  _parent: ResolvingMetadata,
+  parent: ResolvingMetadata,
 ): Promise<Metadata> {
   const { id } = await params;
 
   try {
     const project = await getProjectById(id);
+    const parentMeta = await parent;
+    const canonicalPath = `/projects/${id}`;
 
     return {
       title: project.title,
       description: project.summary,
+      alternates: { canonical: canonicalPath },
       openGraph: {
-        images: project.thumbnailUrl ? [project.thumbnailUrl] : undefined,
+        title: project.title,
+        description: project.summary,
+        type: "website",
+        url: canonicalPath,
+        siteName: parentMeta.openGraph?.siteName,
+        locale: parentMeta.openGraph?.locale,
+        images: project.thumbnailUrl
+          ? [project.thumbnailUrl]
+          : (parentMeta.openGraph?.images ?? []),
       },
     };
   } catch (error) {

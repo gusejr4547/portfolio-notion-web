@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,10 @@ import { getProjects } from "@/lib/notion";
 import { selectFeaturedProjects } from "@/lib/select-featured-projects";
 
 export const revalidate = 600;
+
+export const metadata: Metadata = {
+  description: "Notion에 정리한 프로젝트를 웹에서 소개합니다.",
+};
 
 export default async function Home() {
   const projects = await getProjects();

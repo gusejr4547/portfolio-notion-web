@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
+
 import { ProjectGrid } from "@/components/project/project-grid";
 import { getProjects } from "@/lib/notion";
 import { sortProjectsByPeriodDesc } from "@/lib/sort-projects";
 
 export const revalidate = 600;
+
+export const metadata: Metadata = {
+  title: "프로젝트",
+  description: "등록된 프로젝트를 한눈에 볼 수 있는 목록입니다.",
+};
 
 export default async function ProjectsPage() {
   const projects = await getProjects();
