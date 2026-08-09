@@ -22,7 +22,7 @@ function ProjectCard({
 }) {
   return (
     <Link href={`/projects/${project.id}`} className="block">
-      <Card className="h-full transition-shadow hover:shadow-md">
+      <Card className="h-full pt-0 transition-shadow hover:shadow-md">
         <ProjectThumbnail
           thumbnailUrl={project.thumbnailUrl}
           title={project.title}
