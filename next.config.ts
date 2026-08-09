@@ -4,6 +4,7 @@ import "./src/env";
 
 const nextConfig: NextConfig = {
   images: {
+    minimumCacheTTL: 600,
     remotePatterns: [
       {
         protocol: "https",

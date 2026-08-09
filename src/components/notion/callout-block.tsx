@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { CalloutBlockObjectResponse } from "@notionhq/client";
 
 import { RichText } from "./rich-text";
@@ -13,9 +14,17 @@ function CalloutIcon({ icon }: { icon: CalloutBlockObjectResponse["callout"]["ic
         </span>
       );
     case "external":
-      return <img src={icon.external.url} alt="" className="size-5" />;
     case "file":
-      return <img src={icon.file.url} alt="" className="size-5" />;
+      return (
+        <Image
+          src={icon.type === "external" ? icon.external.url : icon.file.url}
+          alt=""
+          width={20}
+          height={20}
+          className="size-5"
+          unoptimized={icon.type === "external"}
+        />
+      );
     default:
       return null;
   }

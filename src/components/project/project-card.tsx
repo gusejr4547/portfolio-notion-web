@@ -13,7 +13,13 @@ import type { ProjectSummary } from "@/types/project";
 import { ProjectThumbnail } from "./project-thumbnail";
 import { TechStackBadges } from "./tech-stack-badges";
 
-function ProjectCard({ project }: { project: ProjectSummary }) {
+function ProjectCard({
+  project,
+  priority = false,
+}: {
+  project: ProjectSummary;
+  priority?: boolean;
+}) {
   return (
     <Link href={`/projects/${project.id}`} className="block">
       <Card className="h-full transition-shadow hover:shadow-md">
@@ -21,6 +27,7 @@ function ProjectCard({ project }: { project: ProjectSummary }) {
           thumbnailUrl={project.thumbnailUrl}
           title={project.title}
           className="aspect-video w-full"
+          priority={priority}
         />
         <CardHeader>
           <CardTitle>{project.title}</CardTitle>
