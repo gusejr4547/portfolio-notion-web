@@ -15,7 +15,7 @@ function ImageBlock({ block }: { block: ImageBlockObjectResponse }) {
           alt={alt}
           fill
           sizes="(min-width: 768px) 768px, 100vw"
-          className="object-cover"
+          className="object-contain"
           unoptimized={image.type === "external"}
         />
       </div>
