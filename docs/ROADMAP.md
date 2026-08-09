@@ -159,11 +159,15 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
 
 ### Phase 4: 최적화 및 배포
 
-- **Task 011: 성능, SEO, 접근성 최적화**
-  - ISR revalidate 주기 설정 및 라우트별 캐시 전략 확정 (썸네일 서명 URL 만료 주기 고려)
-  - `next/image` 최적화 적용 (sizes, priority, blur placeholder)와 번들 크기 점검
-  - `sitemap.ts`, `robots.ts`, 기본 OG 이미지 구성
-  - 시맨틱 마크업, 키보드 포커스 순서, 이미지 alt 점검 및 Lighthouse 기준치 확인
+- **Task 011: 성능, SEO, 접근성 최적화** ✅ - 완료
+  - ISR revalidate 주기 설정 및 라우트별 캐시 전략 확정 (썸네일 서명 URL 만료 주기 고려) — shrimp Task011-1 완료
+  - `next/image` 최적화 적용 (sizes, priority, blur placeholder)와 번들 크기 점검 — shrimp Task011-2 완료
+  - `sitemap.ts`, `robots.ts`, 기본 OG 이미지 구성 — shrimp Task011-3 완료 (검색 노출 비의도 결정에 따라 sitemap.ts는 생성하지 않고 robots.ts에서 전체 차단)
+  - 시맨틱 마크업, 키보드 포커스 순서, 이미지 alt 점검 및 Lighthouse 기준치 확인 — shrimp Task011-4 완료
+    - `projects/[id]/page.tsx` 본문 wrapper `<article>`, `projects/page.tsx` 목록 wrapper `<section>`으로 전환
+    - Playwright로 홈/목록/상세 3개 페이지 키보드 포커스 순서(Header→본문→Footer) 실측 확인, 문제 없음
+    - Notion 인라인 코드 텍스트의 명도 대비 부족(4.34, 기준 4.5) 발견 후 `text-foreground` 적용으로 수정 (`src/components/notion/rich-text.tsx`)
+    - 프로덕션 빌드 기준 Lighthouse: 홈 93/100/100/66, 목록 95/100/100/66, 상세 95/100/100/66 (Performance/Accessibility/Best-Practices/SEO). SEO 66점은 Task011-3에서 검색 노출을 의도적으로 차단(`robots.ts` Disallow: "/")한 결과인 `is-crawlable` 감사 실패가 유일한 원인이며, 결함이 아닌 의도된 스코프 결정
 
 - **Task 012: Vercel 배포 및 운영 구성**
   - Vercel 프로젝트 연결 및 `NOTION_API_KEY`, `NOTION_DATABASE_ID`, `NEXT_PUBLIC_APP_URL` 환경변수 설정
