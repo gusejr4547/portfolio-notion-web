@@ -41,7 +41,9 @@ async function fetchProjects(): Promise<Project[]> {
 // revalidate=600(10분)은 1/6 수준의 넉넉한 안전 마진이다. 단, 트래픽이 낮은 라우트는
 // stale-while-revalidate로 재검증 창을 넘겨도 즉시 갱신되지 않을 수 있어,
 // 저트래픽 구간에서는 만료된 썸네일 URL이 잠깐 노출될 잔여 위험이 있다.
-// (재검증을 능동적으로 트리거하는 온디맨드 revalidate 핸들러는 Task012에서 다룬다.)
+// (Task012에서 온디맨드 revalidate Route Handler 대신 이 ISR 전략을 그대로 유지하기로
+// 확정했다 — 개인 포트폴리오 수준의 낮은 트래픽에서는 즉시성보다 단순성이 우선이며, 즉시
+// 반영이 필요하면 Vercel 대시보드에서 수동 Redeploy로 대체 가능하다.)
 export const getProjects = cache(
   unstable_cache(fetchProjects, ["projects"], {
     tags: ["projects"],

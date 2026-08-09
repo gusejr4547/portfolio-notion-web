@@ -169,9 +169,9 @@ AGENTS.md의 레벨 판단 기준을 그대로 따른다.
     - Notion 인라인 코드 텍스트의 명도 대비 부족(4.34, 기준 4.5) 발견 후 `text-foreground` 적용으로 수정 (`src/components/notion/rich-text.tsx`)
     - 프로덕션 빌드 기준 Lighthouse: 홈 93/100/100/66, 목록 95/100/100/66, 상세 95/100/100/66 (Performance/Accessibility/Best-Practices/SEO). SEO 66점은 Task011-3에서 검색 노출을 의도적으로 차단(`robots.ts` Disallow: "/")한 결과인 `is-crawlable` 감사 실패가 유일한 원인이며, 결함이 아닌 의도된 스코프 결정
 
-- **Task 012: Vercel 배포 및 운영 구성**
-  - Vercel 프로젝트 연결 및 `NOTION_API_KEY`, `NOTION_DATABASE_ID`, `NEXT_PUBLIC_APP_URL` 환경변수 설정
-  - Notion Integration에 대상 Database 공유 권한이 부여되었는지 확인
-  - 프로덕션 스모크 테스트 (홈/목록/상세 3개 페이지와 외부 링크)
-  - 콘텐츠 갱신 반영 수단 정리 (Revalidate Route Handler 또는 주기적 ISR)
-  - README와 로컬 실행/환경변수 문서 갱신
+- **Task 012: Vercel 배포 및 운영 구성** (진행 중 — 문서/코드 준비 완료, 실제 배포는 사용자 진행 대기)
+  - README에 "🚀 배포 (Vercel)" 가이드 섹션 신규 작성 (GitHub Import → 환경변수 3종 설정 → Notion Integration Database Connect 확인 → Deploy) — shrimp Task012-1 완료
+  - 로컬 실행 환경변수 설정 안내(`.env.example` 복사 절차) 및 낡은 "개발 상태" 섹션 현행화, `package.json`에 `engines.node: ">=20.9.0"` 명시 — shrimp Task012-1 완료
+  - 콘텐츠 갱신 반영 수단 확정: 온디맨드 Route Handler를 신설하지 않고 Task011-1의 ISR `revalidate=600` 전략을 그대로 유지하기로 결정, `src/lib/notion/projects.ts` 주석과 README에 정책(10분 내 자동 반영, 필요 시 Vercel Redeploy로 강제) 반영 — shrimp Task012-2 완료
+  - 프로덕션 스모크 테스트 체크리스트를 README에 작성(홈/목록/상세, 외부 링크 새 탭, 라이트·다크모드, 모바일 뷰포트) — shrimp Task012-3 완료. 단, 실제 Vercel 프로젝트 연결·환경변수 입력·배포·Playwright 스모크 테스트 실행은 계정 접근이 필요해 사용자가 가이드에 따라 직접 수행 후 프로덕션 URL을 공유하면 이어서 진행
+  - `npm run test:run`(103개), `npm run test:e2e`(17개) 전체 통과 확인, 회귀 없음
