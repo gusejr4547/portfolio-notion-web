@@ -15,7 +15,8 @@ function RichText({ richText }: { richText: RichTextItemResponse[] }) {
           item.annotations.bold && "font-bold",
           item.annotations.italic && "italic",
           item.annotations.strikethrough && "line-through",
-          item.annotations.code && "rounded bg-muted px-1 py-0.5 font-mono text-sm",
+          item.annotations.code &&
+            "rounded bg-muted px-1 py-0.5 font-mono text-sm text-foreground",
         );
 
         if (item.href) {

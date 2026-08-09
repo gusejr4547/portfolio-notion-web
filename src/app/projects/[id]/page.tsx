@@ -73,7 +73,7 @@ export default async function ProjectDetailPage({
   const blocks = await getProjectBlocks(id);
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-24">
+    <article className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-24">
       <div className="flex flex-col gap-2">
         <h1 className="text-3xl font-semibold tracking-tight">
           {project.title}
@@ -91,7 +91,7 @@ export default async function ProjectDetailPage({
       </section>
 
       <ProjectLinks githubUrl={project.githubUrl} demoUrl={project.demoUrl} />
-    </div>
+    </article>
   );
 }
 

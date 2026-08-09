@@ -18,9 +18,9 @@ export default async function ProjectsPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-24">
       <h1 className="text-3xl font-semibold tracking-tight">프로젝트</h1>
-      <div className="mt-8">
+      <section className="mt-8">
         <ProjectGrid projects={sortedProjects} />
-      </div>
+      </section>
     </div>
   );
 }
