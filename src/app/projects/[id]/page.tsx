@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import { NotionBlockRenderer } from "@/components/notion/notion-block-renderer";
 import { ProjectLinks } from "@/components/project/project-links";
+import { ProjectNavigation } from "@/components/project/project-navigation";
 import { TechStackBadges } from "@/components/project/tech-stack-badges";
 import { formatPeriod } from "@/lib/format-period";
 import {
@@ -11,6 +12,8 @@ import {
   getProjects,
   NotionDataAccessError,
 } from "@/lib/notion";
+import { findAdjacentProjects } from "@/lib/project-navigation";
+import { sortProjectsByPeriodDesc } from "@/lib/sort-projects";
 
 export const revalidate = 600;
 
@@ -72,6 +75,9 @@ export default async function ProjectDetailPage({
 
   const blocks = await getProjectBlocks(id);
 
+  const orderedProjects = sortProjectsByPeriodDesc(await getProjects());
+  const { previous, next } = findAdjacentProjects(orderedProjects, id);
+
   return (
     <article className="mx-auto flex max-w-3xl flex-col gap-8 px-4 py-24">
       <div className="flex flex-col gap-2">
@@ -91,6 +97,8 @@ export default async function ProjectDetailPage({
       </section>
 
       <ProjectLinks githubUrl={project.githubUrl} demoUrl={project.demoUrl} />
+
+      <ProjectNavigation previous={previous} next={next} />
     </article>
   );
 }
