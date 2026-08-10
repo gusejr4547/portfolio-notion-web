@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { mockProjects } from "@/lib/mock/projects";
-import { sortProjectsByPeriodDesc } from "@/lib/sort-projects";
+import { sortProjectsByPeriodAsc, sortProjectsByPeriodDesc } from "@/lib/sort-projects";
 import type { ProjectPeriod, ProjectSummary } from "@/types/project";
 
 describe("sortProjectsByPeriodDesc", () => {
@@ -84,5 +84,87 @@ describe("sortProjectsByPeriodDesc", () => {
     const result = sortProjectsByPeriodDesc(summaries);
 
     expect(result.map((item) => item.id)).toEqual(["summary-new", "summary-old"]);
+  });
+});
+
+describe("sortProjectsByPeriodAsc", () => {
+  it("셔플된 mockProjects 사본을 기간(period.start) 기준 오래된순으로 정렬하고, 기간이 없는 항목은 맨 뒤로 보낸다", () => {
+    const shuffled = [
+      mockProjects[3],
+      mockProjects[5],
+      mockProjects[1],
+      mockProjects[0],
+      mockProjects[4],
+      mockProjects[2],
+    ];
+
+    const result = sortProjectsByPeriodAsc(shuffled);
+
+    expect(result.map((project) => project.id)).toEqual([
+      "mock-project-5",
+      "mock-project-4",
+      "mock-project-3",
+      "mock-project-1",
+      "mock-project-2",
+      "mock-project-6",
+    ]);
+  });
+
+  it("기간이 없는 항목끼리는 원래 순서를 그대로 유지한다(안정 정렬)", () => {
+    const items: { id: string; period?: ProjectPeriod }[] = [
+      { id: "no-period-a", period: undefined },
+      { id: "no-start-b", period: { start: "" } as unknown as ProjectPeriod },
+      { id: "no-period-c", period: undefined },
+    ];
+
+    const result = sortProjectsByPeriodAsc(items);
+
+    expect(result.map((item) => item.id)).toEqual(["no-period-a", "no-start-b", "no-period-c"]);
+  });
+
+  it("기간이 없는 항목은 정렬 방향과 무관하게 항상 맨 뒤에 온다", () => {
+    const items: { id: string; period?: ProjectPeriod }[] = [
+      { id: "no-period", period: undefined },
+      { id: "dated", period: { start: "2020-01-01" } },
+    ];
+
+    const result = sortProjectsByPeriodAsc(items);
+
+    expect(result.map((item) => item.id)).toEqual(["dated", "no-period"]);
+  });
+
+  it("원본 배열을 변경하지 않는다", () => {
+    const original = [...mockProjects];
+    const originalIds = original.map((project) => project.id);
+
+    sortProjectsByPeriodAsc(original);
+
+    expect(original.map((project) => project.id)).toEqual(originalIds);
+  });
+
+  it("빈 배열을 입력하면 빈 배열을 반환한다", () => {
+    expect(sortProjectsByPeriodAsc([])).toEqual([]);
+  });
+
+  it("period.start가 동일한 두 항목은 원래 순서를 유지한다", () => {
+    const items: { id: string; period?: ProjectPeriod }[] = [
+      { id: "first", period: { start: "2025-01-01" } },
+      { id: "second", period: { start: "2025-01-01" } },
+    ];
+
+    const result = sortProjectsByPeriodAsc(items);
+
+    expect(result.map((item) => item.id)).toEqual(["first", "second"]);
+  });
+
+  it("ProjectSummary 형태의 최소 객체에도 제네릭이 정상 동작한다", () => {
+    const summaries: Pick<ProjectSummary, "id" | "period">[] = [
+      { id: "summary-old", period: { start: "2024-01-01" } },
+      { id: "summary-new", period: { start: "2025-01-01" } },
+    ];
+
+    const result = sortProjectsByPeriodAsc(summaries);
+
+    expect(result.map((item) => item.id)).toEqual(["summary-old", "summary-new"]);
   });
 });
