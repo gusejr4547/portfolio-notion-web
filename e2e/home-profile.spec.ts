@@ -36,6 +36,38 @@ test.describe("홈 프로필", () => {
     expect(bodyText).not.toMatch(/0\d{1,2}-\d{3,4}-\d{4}/);
   });
 
+  test("연락처는 두 줄로 나뉘어 표시된다", async ({ page }) => {
+    await page.goto("/");
+
+    const mailLink = page.locator('a[href^="mailto:"]').first();
+    const githubLink = page.locator('main a[href^="https://github.com/"]').first();
+    const mailBox = await mailLink.boundingBox();
+    const githubBox = await githubLink.boundingBox();
+
+    expect(mailBox).not.toBeNull();
+    expect(githubBox).not.toBeNull();
+    // 이메일 링크는 GitHub 링크보다 아래 줄에 있다.
+    expect(mailBox!.y).toBeGreaterThan(githubBox!.y + githubBox!.height - 1);
+  });
+
+  test("섹션 제목(h3)이 소제목(h4)보다 크고, 소제목에는 강조 막대가 있다", async ({ page }) => {
+    await page.goto("/");
+
+    const sectionHeading = page.locator("main h3").first();
+    const subHeading = page.locator("main h4").first();
+    await expect(sectionHeading).toBeVisible();
+    await expect(subHeading).toBeVisible();
+
+    const sizeOf = (locator: typeof sectionHeading) =>
+      locator.evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+    expect(await sizeOf(sectionHeading)).toBeGreaterThan(await sizeOf(subHeading));
+
+    const barWidth = await subHeading.evaluate((el) =>
+      parseFloat(getComputedStyle(el).borderLeftWidth),
+    );
+    expect(barWidth).toBeGreaterThan(0);
+  });
+
   test("프로필 아래에 대표 프로젝트 섹션이 유지된다", async ({ page }) => {
     await page.goto("/");
 

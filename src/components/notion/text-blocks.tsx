@@ -8,9 +8,10 @@ import type {
 
 import { RichText } from "./rich-text";
 
+/** Notion 문단 안의 줄바꿈(Shift+Enter)이 공백으로 접히지 않도록 `whitespace-pre-line`을 쓴다. */
 function ParagraphBlock({ block }: { block: ParagraphBlockObjectResponse }) {
   return (
-    <p className="leading-7">
+    <p className="leading-7 whitespace-pre-line">
       <RichText richText={block.paragraph.rich_text} />
     </p>
   );

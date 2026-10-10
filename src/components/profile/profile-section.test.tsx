@@ -39,6 +39,16 @@ describe("ProfileSection", () => {
     expect(skill.compareDocumentPosition(education) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
+  it("제목 위계 클래스를 본문 컨테이너에 적용해 섹션 제목(h3)과 소제목(h4)을 구분한다", () => {
+    const { container } = render(<ProfileSection profile={profile} />);
+
+    const body = container.querySelector("section > div");
+    expect(body?.className).toContain("[&_h3]:text-2xl");
+    expect(body?.className).toContain("[&_h3]:border-b");
+    expect(body?.className).toContain("[&_h4]:text-base");
+    expect(body?.className).toContain("[&_h4]:border-l-4");
+  });
+
   it("기술 스택이 없어도 앞뒤 본문은 그대로 렌더한다", () => {
     render(<ProfileSection profile={{ ...profile, skills: [] }} />);
 

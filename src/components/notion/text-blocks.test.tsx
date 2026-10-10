@@ -4,6 +4,7 @@ import {
   createHeadingBlock,
   createParagraphBlock,
   createQuoteBlock,
+  richTextItem,
 } from "@/lib/notion/__fixtures__/notion-blocks.fixtures";
 import { render, screen } from "@/test/utils";
 
@@ -17,6 +18,17 @@ describe("ParagraphBlock", () => {
     render(<ParagraphBlock block={block} />);
 
     expect(screen.getByText("문단 paragraph-1")).toBeInTheDocument();
+  });
+
+  it("문단 안의 줄바꿈이 접히지 않도록 whitespace-pre-line을 적용한다", () => {
+    const block = createParagraphBlock("paragraph-2", [richTextItem("첫 줄\n둘째 줄")]);
+    if (block.type !== "paragraph") throw new Error("paragraph 픽스처가 필요합니다");
+
+    render(<ParagraphBlock block={block} />);
+
+    const paragraph = screen.getByText(/첫 줄/);
+    expect(paragraph.closest("p")).toHaveClass("whitespace-pre-line");
+    expect(paragraph.textContent).toBe("첫 줄\n둘째 줄");
   });
 });
 
