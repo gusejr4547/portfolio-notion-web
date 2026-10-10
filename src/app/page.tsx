@@ -36,7 +36,8 @@ export default async function Home() {
       )}
 
       <section className="flex flex-col gap-6">
-        <h2 className="text-2xl font-semibold tracking-tight">
+        {/* 프로필 섹션 제목(소개·기술 스택 등)과 같은 구분선 스타일 */}
+        <h2 className="border-b pb-2 text-2xl font-semibold tracking-tight">
           대표 프로젝트
         </h2>
         <ProjectGrid projects={featuredProjects} />
