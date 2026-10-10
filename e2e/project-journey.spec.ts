@@ -61,20 +61,34 @@ test("UUID 형식이지만 존재하지 않는 프로젝트 id는 404를 보여�
 test.describe("모바일 뷰포트 회귀", () => {
   test.use({ viewport: mobileViewport });
 
-  test("홈: 헤더 nav가 숨겨져도 대표 프로젝트와 CTA로 목록까지 도달할 수 있다", async ({
+  test("홈: 하단 독이 모바일에서도 보이고 가로 스크롤 없이 목록까지 도달할 수 있다", async ({
     page,
   }) => {
     await page.goto("/");
 
-    // sm 미만에서는 헤더 nav 링크가 hidden 처리된다.
-    await expect(
-      page.getByRole("link", { name: "프로젝트", exact: true }),
-    ).toBeHidden();
+    // 하단 독은 모바일에서도 라벨과 함께 보이며 프로젝트 목록으로 이동할 수 있다.
+    const dock = page.getByRole("navigation", { name: "주요 메뉴" });
+    await expect(dock.getByRole("link", { name: "프로젝트", exact: true })).toBeVisible();
+    await expect(dock.getByRole("button", { name: "테마 전환" })).toBeVisible();
+
+    const overflow = await page.evaluate(
+      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    );
+    expect(overflow).toBeLessThanOrEqual(0);
 
     const projectLinks = page.locator('a[href^="/projects/"]');
     await expect(projectLinks.first()).toBeVisible();
 
     await page.getByRole("button", { name: "전체 프로젝트 보기" }).click();
+    await expect(page).toHaveURL("/projects");
+  });
+
+  test("홈: 하단 독의 프로젝트 탭으로도 목록에 도달할 수 있다", async ({ page }) => {
+    await page.goto("/");
+    await page
+      .getByRole("navigation", { name: "주요 메뉴" })
+      .getByRole("link", { name: "프로젝트", exact: true })
+      .click();
     await expect(page).toHaveURL("/projects");
   });
 

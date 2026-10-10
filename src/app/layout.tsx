@@ -5,7 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
-import { Header } from "@/components/layout/header";
+import { BottomNav } from "@/components/layout/bottom-nav";
 import { env } from "@/env";
 
 const geistSans = Geist({
@@ -53,8 +53,9 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col">
         <ThemeProvider>
           <TooltipProvider>
-            <Header />
-            <main className="flex-1">{children}</main>
+            {/* pb-8: 하단 플로팅 독(BottomNav)과 마지막 콘텐츠 사이에 여유를 둔다. */}
+            <main className="flex-1 pb-8">{children}</main>
+            <BottomNav />
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>

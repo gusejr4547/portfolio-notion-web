@@ -1,19 +1,57 @@
 import { expect, test } from "@playwright/test";
 
-test.describe("헤더 내비게이션", () => {
+test.describe("하단 내비게이션 독", () => {
   test("프로젝트로 이동한다", async ({ page }) => {
     await page.goto("/");
-    await page.getByRole("link", { name: "프로젝트", exact: true }).click();
+    const dock = page.getByRole("navigation", { name: "주요 메뉴" });
+    await dock.getByRole("link", { name: "프로젝트", exact: true }).click();
     await expect(page).toHaveURL("/projects");
     await expect(
       page.getByRole("heading", { level: 1, name: "프로젝트" }),
     ).toBeVisible();
   });
 
-  test("로고를 클릭하면 홈으로 이동한다", async ({ page }) => {
+  test("홈 탭을 클릭하면 홈으로 이동한다", async ({ page }) => {
     await page.goto("/projects");
-    await page.getByRole("link", { name: "포트폴리오", exact: true }).click();
+    await page
+      .getByRole("navigation", { name: "주요 메뉴" })
+      .getByRole("link", { name: "홈", exact: true })
+      .click();
     await expect(page).toHaveURL("/");
+  });
+
+  test("현재 페이지에 해당하는 탭이 aria-current로 표시된다", async ({ page }) => {
+    const dock = page.getByRole("navigation", { name: "주요 메뉴" });
+
+    await page.goto("/");
+    await expect(dock.getByRole("link", { name: "홈" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+
+    await page.goto("/projects");
+    await expect(dock.getByRole("link", { name: "프로젝트" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+  });
+
+  test("독은 화면 하단 중앙에 고정되어 스크롤해도 따라온다", async ({ page }) => {
+    await page.goto("/");
+    const dock = page.getByRole("navigation", { name: "주요 메뉴" });
+    await expect(dock).toBeVisible();
+
+    const viewport = page.viewportSize()!;
+    const before = await dock.getByRole("link", { name: "홈" }).boundingBox();
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(200);
+    const after = await dock.getByRole("link", { name: "홈" }).boundingBox();
+
+    expect(before).not.toBeNull();
+    expect(after).not.toBeNull();
+    // 스크롤 전후로 화면 기준 위치가 같고, 화면 아래쪽 절반에 있다.
+    expect(after!.y).toBeCloseTo(before!.y, 0);
+    expect(after!.y).toBeGreaterThan(viewport.height / 2);
   });
 });
 
