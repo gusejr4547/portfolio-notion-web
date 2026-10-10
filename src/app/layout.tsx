@@ -6,7 +6,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
 import { env } from "@/env";
 
 const geistSans = Geist({
@@ -56,7 +55,6 @@ export default function RootLayout({
           <TooltipProvider>
             <Header />
             <main className="flex-1">{children}</main>
-            <Footer />
             <Toaster />
           </TooltipProvider>
         </ThemeProvider>
