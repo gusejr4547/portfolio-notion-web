@@ -137,3 +137,15 @@ PRD가 "MVP 이후 기능"으로 분류했던 태그 필터링과 겹치지만, 
   - 유닛 테스트(node): `src/lib/notion/profile.test.ts` 신규, `mapper.test.ts` 확장
   - 유닛 테스트(jsdom): `src/components/profile/skills-section.test.tsx`, `profile-section.test.tsx` 신규, `rich-text.test.tsx` 확장
   - E2E: `e2e/home-profile.spec.ts` 신규 (이름·기술 스택·연락처 노출, 전화번호 미노출, 대표 프로젝트 유지, 모바일 가로 스크롤 없음. 실데이터라 값 하드코딩 없이 상대 검증)
+
+### Phase 7: 하단 내비게이션 독 ✅ - 완료
+
+상단 sticky 헤더(로고·홈/프로젝트 링크·테마 토글)를 없애고, 화면 하단에 떠 있는 둥근 pill 독으로 내비게이션을 옮긴다. 별도 참고 프로젝트(`ai-portfolio`)의 하단 탭 바 형태를 우리 사이트의 멀티 라우트·디자인 토큰에 맞게 재구성했다. 새 의존성은 `motion` 하나다.
+
+- **Task 016: 하단 플로팅 내비게이션 독** ✅ - 완료
+  - See: `/tasks/016-bottom-nav.md`
+  - `src/components/layout/bottom-nav.tsx` 신규(client): 홈·프로젝트 탭(아이콘+라벨) + 구분선 + 테마 토글. 활성 판정은 `usePathname`(`/`은 정확 일치, 그 외는 하위 경로 포함 → `/projects/[id]`에서도 "프로젝트" 활성), 활성 pill은 `motion`의 `layoutId` 스프링으로 슬라이딩하고 `MotionConfig reducedMotion="user"`로 모션 감소 설정을 존중
+  - `src/app/layout.tsx`: `Header` 대신 `BottomNav`를 루트에 두어 라우트 이동 중 언마운트되지 않게 하고, `main`에 `pb-8`을 줘 마지막 콘텐츠와 독 사이 간격을 확보. `header.tsx`와 `header.test.tsx` 삭제
+  - `ModeToggle`에 선택 props `side`/`align`/`sideOffset` 추가(기본값은 기존 동작 유지). 독에서는 메뉴가 위로 열리도록 `side="top"`
+  - 유닛 테스트(jsdom): `src/components/layout/bottom-nav.test.tsx` 신규(`usePathname` mock)
+  - E2E: `navigation`(홈 탭 이동·`aria-current`·스크롤 시 하단 고정), `project-journey`(모바일에서도 독 노출·가로 스크롤 없음), `layout-stability`(독 위치가 페이지 간 동일) 갱신
