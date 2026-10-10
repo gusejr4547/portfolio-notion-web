@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button } from "@/components/ui/button";
+import { ProfileSection } from "@/components/profile/profile-section";
 import { ProjectGrid } from "@/components/project/project-grid";
-import { getProjects } from "@/lib/notion";
+import { getOptionalProfile, getProjects } from "@/lib/notion";
 import { selectFeaturedProjects } from "@/lib/select-featured-projects";
 
 export const revalidate = 600;
@@ -13,19 +14,26 @@ export const metadata: Metadata = {
 };
 
 export default async function Home() {
-  const projects = await getProjects();
+  const [projects, profile] = await Promise.all([
+    getProjects(),
+    getOptionalProfile(),
+  ]);
   const featuredProjects = selectFeaturedProjects(projects);
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-16 px-4 py-24">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-          포트폴리오
-        </h1>
-        <p className="max-w-xl text-muted-foreground">
-          Notion에 정리한 프로젝트를 웹에서 소개합니다.
-        </p>
-      </div>
+      {profile ? (
+        <ProfileSection profile={profile} />
+      ) : (
+        <div className="flex flex-col items-center gap-4 text-center">
+          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+            포트폴리오
+          </h1>
+          <p className="max-w-xl text-muted-foreground">
+            Notion에 정리한 프로젝트를 웹에서 소개합니다.
+          </p>
+        </div>
+      )}
 
       <section className="flex flex-col gap-6">
         <h2 className="text-2xl font-semibold tracking-tight">

@@ -1,5 +1,6 @@
 import type { PageObjectResponse } from "@notionhq/client";
 
+import { SKILLS_PROPERTY, type SkillGroup } from "@/types/profile";
 import { NOTION_PROPERTY, type Project, type ProjectPeriod } from "@/types/project";
 
 type NotionProperty = PageObjectResponse["properties"][string];
@@ -26,6 +27,32 @@ export function mapPageToProject(page: PageObjectResponse): Project {
     period: extractPeriod(page.properties[NOTION_PROPERTY.period]),
     featured: extractCheckbox(page.properties[NOTION_PROPERTY.featured]),
   };
+}
+
+/** 기술 스택 DB의 행을 `SkillGroup`으로 변환한다. 분야(title)가 비어 있으면 null. */
+export function mapPageToSkillGroup(page: PageObjectResponse): SkillGroup | null {
+  const category = extractTitle(page.properties[SKILLS_PROPERTY.category]);
+  if (!category) return null;
+
+  return {
+    category,
+    proficient: extractMultiSelect(page.properties[SKILLS_PROPERTY.proficient]),
+    familiar: extractMultiSelect(page.properties[SKILLS_PROPERTY.familiar]),
+    order: extractNumber(page.properties[SKILLS_PROPERTY.order]),
+  };
+}
+
+function extractNumber(property: NotionProperty | undefined): number | undefined {
+  if (!property || property.type !== "number") return undefined;
+  return property.number ?? undefined;
+}
+
+/** 프로필 페이지처럼 title 속성명이 정해져 있지 않은 페이지에서 제목 텍스트를 꺼낸다. */
+export function mapPageToName(page: PageObjectResponse): string {
+  const titleProperty = Object.values(page.properties).find(
+    (property) => property.type === "title",
+  );
+  return extractTitle(titleProperty);
 }
 
 function extractTitle(property: NotionProperty | undefined): string {

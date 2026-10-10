@@ -2,8 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { mockProjects } from "@/lib/mock/projects";
 
+import { SKILLS_PROPERTY } from "@/types/profile";
+
 import {
+  createPage,
   mockNotionPages,
+  multiSelectProperty,
+  numberProperty,
   pageEmptyTitleArray,
   pageFileHostedThumbnail,
   pageMissingPeriod,
@@ -12,8 +17,9 @@ import {
   pageNullUrls,
   pageWrongTypeFeatured,
   pageWrongTypeTechStack,
+  titleProperty,
 } from "./__fixtures__/notion-pages.fixtures";
-import { mapPageToProject } from "./mapper";
+import { mapPageToName, mapPageToProject, mapPageToSkillGroup } from "./mapper";
 
 describe("mapPageToProject", () => {
   it.each(mockNotionPages.map((page, index) => [page, mockProjects[index]] as const))(
@@ -66,5 +72,57 @@ describe("mapPageToProject", () => {
     const result = mapPageToProject(pageWrongTypeFeatured);
 
     expect(result.featured).toBe(false);
+  });
+});
+
+describe("mapPageToSkillGroup", () => {
+  it("분야(title)와 숙련도별 multi-select를 SkillGroup으로 매핑한다", () => {
+    const page = createPage("skill-backend", {
+      [SKILLS_PROPERTY.category]: titleProperty(["Backend"]),
+      [SKILLS_PROPERTY.proficient]: multiSelectProperty(["Spring Boot", "Spring"]),
+      [SKILLS_PROPERTY.familiar]: multiSelectProperty(["Spring Cloud"]),
+      [SKILLS_PROPERTY.order]: numberProperty(2),
+    });
+
+    expect(mapPageToSkillGroup(page)).toEqual({
+      category: "Backend",
+      proficient: ["Spring Boot", "Spring"],
+      familiar: ["Spring Cloud"],
+      order: 2,
+    });
+  });
+
+  it("숙련도 컬럼이 없거나 비어 있으면 빈 배열로 대체한다", () => {
+    const page = createPage("skill-frontend", {
+      [SKILLS_PROPERTY.category]: titleProperty(["Frontend"]),
+      [SKILLS_PROPERTY.familiar]: multiSelectProperty(["React", "Vue.js"]),
+    });
+
+    expect(mapPageToSkillGroup(page)).toEqual({
+      category: "Frontend",
+      proficient: [],
+      familiar: ["React", "Vue.js"],
+      order: undefined,
+    });
+  });
+
+  it("분야가 비어 있는 행은 null을 반환한다", () => {
+    const page = createPage("skill-empty", {
+      [SKILLS_PROPERTY.category]: titleProperty([]),
+    });
+
+    expect(mapPageToSkillGroup(page)).toBeNull();
+  });
+});
+
+describe("mapPageToName", () => {
+  it("속성명과 상관없이 title 타입 속성의 텍스트를 이름으로 읽는다", () => {
+    const page = createPage("profile-page", { title: titleProperty(["조현덕 CHO HYUN DEOK"]) });
+
+    expect(mapPageToName(page)).toBe("조현덕 CHO HYUN DEOK");
+  });
+
+  it("title 속성이 없으면 빈 문자열을 반환한다", () => {
+    expect(mapPageToName(createPage("no-title", {}))).toBe("");
   });
 });

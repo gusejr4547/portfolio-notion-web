@@ -55,6 +55,19 @@ describe("RichText", () => {
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  it("mailto 링크는 새 탭 속성 없이 같은 탭에서 열린다", () => {
+    render(
+      <RichText
+        richText={[richTextItem("메일", { href: "mailto:hello@example.com" })]}
+      />,
+    );
+
+    const link = screen.getByRole("link", { name: "메일" });
+    expect(link).toHaveAttribute("href", "mailto:hello@example.com");
+    expect(link).not.toHaveAttribute("target");
+    expect(link).not.toHaveAttribute("rel");
+  });
+
   it("빈 배열이 주어지면 아무것도 렌더되지 않는다", () => {
     render(
       <div data-testid="rich-text-root">

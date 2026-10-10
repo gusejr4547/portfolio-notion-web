@@ -129,6 +129,14 @@ function checkboxProperty(checked: boolean): NotionProperty {
   } as NotionProperty;
 }
 
+function numberProperty(value: number | null): NotionProperty {
+  return {
+    id: "number-prop",
+    type: "number",
+    number: value,
+  } as NotionProperty;
+}
+
 function createPage(id: string, properties: PageProperties): PageObjectResponse {
   return {
     object: "page",
@@ -276,6 +284,10 @@ const pageWrongTypeFeatured = createPage("malformed-wrong-type-featured", {
 });
 
 export {
+  createPage,
+  numberProperty,
+  multiSelectProperty,
+  titleProperty,
   mockNotionPages,
   pageMissingTitle,
   pageEmptyTitleArray,

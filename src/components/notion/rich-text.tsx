@@ -20,12 +20,14 @@ function RichText({ richText }: { richText: RichTextItemResponse[] }) {
         );
 
         if (item.href) {
+          // mailto: 링크는 새 탭을 열면 빈 탭이 남으므로 같은 탭에서 메일 앱으로 넘긴다.
+          const isMail = item.href.startsWith("mailto:");
           return (
             <Link
               key={index}
               href={item.href}
-              target="_blank"
-              rel="noopener noreferrer"
+              target={isMail ? undefined : "_blank"}
+              rel={isMail ? undefined : "noopener noreferrer"}
               className={cn("underline underline-offset-2", className)}
             >
               {item.plain_text}
