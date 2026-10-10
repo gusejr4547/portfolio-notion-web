@@ -28,5 +28,8 @@
         ]
       }
     ]
+  },
+  "enabledPlugins": {
+    "frontend-design@anthropic-plugin-directory": true
   }
 }
