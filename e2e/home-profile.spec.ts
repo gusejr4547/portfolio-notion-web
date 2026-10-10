@@ -68,6 +68,20 @@ test.describe("홈 프로필", () => {
     expect(barWidth).toBeGreaterThan(0);
   });
 
+  test("프로필 섹션 제목과 대표 프로젝트 제목의 가로 폭이 같다", async ({ page }) => {
+    await page.goto("/");
+
+    const profileHeading = await page.locator("main section h3").first().boundingBox();
+    const featuredHeading = await page
+      .getByRole("heading", { level: 2, name: "대표 프로젝트" })
+      .boundingBox();
+
+    expect(profileHeading).not.toBeNull();
+    expect(featuredHeading).not.toBeNull();
+    expect(profileHeading!.x).toBeCloseTo(featuredHeading!.x, 0);
+    expect(profileHeading!.width).toBeCloseTo(featuredHeading!.width, 0);
+  });
+
   test("프로필 아래에 대표 프로젝트 섹션이 유지된다", async ({ page }) => {
     await page.goto("/");
 

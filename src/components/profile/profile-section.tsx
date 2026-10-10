@@ -14,7 +14,8 @@ const HEADING_HIERARCHY_CLASSES = [
 /** 이름(h1)과 프로필 페이지 본문을 Notion에서 보이는 순서(연락처 → 소개 → 기술 스택 → 학력/교육 → 수상/자격증)대로 보여준다. */
 function ProfileSection({ profile }: { profile: Profile }) {
   return (
-    <section className="flex max-w-3xl flex-col gap-8">
+    // 폭은 부모(홈 컨테이너 max-w-5xl)를 그대로 따라 아래 "대표 프로젝트" 영역과 가로 폭이 항상 같다.
+    <section className="flex flex-col gap-8">
       <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
         {profile.name}
       </h1>
