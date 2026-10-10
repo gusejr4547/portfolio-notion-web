@@ -17,6 +17,7 @@
 - 코드: `getProfile`이 이름 + 본문 블록(`getProjectBlocks` 재사용) + `child_database` 기준 앞/뒤 분리 + 기술 스택 행 매핑을 수행하고, `getOptionalProfile`은 ID 미설정·조회 실패 시 `null`을 반환해 홈이 기존 히어로로 대체된다
 - 기술 스택 DB 분야 순서는 Notion 생성 시각(분 단위)으로 정해지지 않아 선택 속성 `순서`(number)를 추가해 클라이언트에서 정렬한다
 - `RichText`: `mailto:` 링크는 새 탭 속성 없이 같은 탭에서 연다
+- 가독성 개선: 프로필 본문의 섹션 제목(h3)은 `text-2xl` + 아래 구분선, 소제목(h4)은 본문 크기 + 왼쪽 강조 막대로 위계를 구분한다(`ProfileSection` 컨테이너 안에서만 적용, 프로젝트 상세는 변경 없음). 연락처는 Notion 문단 안 줄바꿈(`<br>`)으로 두 줄로 표시하며, 이를 위해 `ParagraphBlock`에 `whitespace-pre-line`을 적용해 프로젝트 상세 본문에서도 원문 줄바꿈이 그대로 보인다
 - 검증: lint·tsc·`npm run test:run`(161개)·`npm run test:e2e`(24 통과, 1 skip) 통과. Playwright MCP로 다크/라이트/모바일(390×844) 화면, 전화번호 미노출, `NOTION_PROFILE_PAGE_ID` 미설정 시 폴백을 직접 확인했다
 
 ## 관련 파일
