@@ -120,3 +120,20 @@ PRD가 "MVP 이후 기능"으로 분류했던 태그 필터링과 겹치지만, 
   - 유닛 테스트(node): `src/lib/project-navigation.test.ts` 신규 (첫/마지막/중간/단일/미존재 id 케이스)
   - 유닛 테스트(jsdom): `src/components/project/project-navigation.test.tsx` 신규
   - E2E: `e2e/project-detail-navigation.spec.ts` 신규 (이전/다음 링크 클릭 시 URL 이동 및 왕복 확인)
+
+### Phase 6: 홈 프로필 소개 ✅ - 완료
+
+방문자가 홈에서 누구의 포트폴리오인지 바로 알 수 있도록, Notion 프로필 페이지의 이름·소개·기술 스택·학력/수상·연락처를 홈 상단에 표시한다. 소개(About) 전용 페이지는 만들지 않으며, 전화번호는 공개 사이트에 노출하지 않는다. [docs/PRD.md](./PRD.md)에 F006으로 등재되어 있다.
+
+- **Task 015: 홈 프로필 소개 (F006)** ✅ - 완료
+  - See: `/tasks/015-home-profile.md`
+  - Notion 프로필 페이지(제목=이름, 본문=소개·학력·수상·연락처) + 본문 중간의 인라인 DB `Skills & Tools`(`구분`, `많이 해봤어요`, `해본 적 있어요`)로 데이터를 관리하고, 환경변수 `NOTION_PROFILE_PAGE_ID`(선택)로 연결. 페이지는 Notion Integration에 Connect되어 있어야 한다
+  - `src/types/profile.ts` 신규: `Profile`, `SkillGroup`, `SKILLS_PROPERTY`
+  - `src/lib/notion/profile.ts` 신규: `getProfile`(`cache(unstable_cache(...))`, `revalidate = 600`)이 이름 + 본문 블록(`getProjectBlocks` 재사용) + `child_database` 위치 기준 앞/뒤 분리 + 기술 스택 행 매핑. `getOptionalProfile`은 ID 미설정·조회 실패 시 `null`을 반환해 홈이 깨지지 않게 함
+  - `src/lib/notion/mapper.ts`에 `mapPageToSkillGroup`, `mapPageToName` 추가. 기술 스택 DB의 선택 속성 `순서`(number)로 분야 표시 순서를 지정하며, 비어 있으면 뒤로 보낸다(Notion 생성 시각은 분 단위라 정렬 기준으로 쓸 수 없음)
+  - `src/components/profile/`: `SkillsSection`(채운 배지=많이 해봤어요, 윤곽선 배지=해본 적 있어요, 범례 포함), `ProfileSection`(이름 h1 + 소개 → 기술 스택 → 학력/수상 순 렌더)
+  - `src/app/page.tsx`: 프로필이 있으면 `ProfileSection`, 없으면 기존 히어로 문구로 대체하고 "대표 프로젝트" 섹션은 유지. 기존 `revalidate = 600` ISR 유지
+  - `RichText`의 `mailto:` 링크는 새 탭 대신 같은 탭에서 열도록 처리
+  - 유닛 테스트(node): `src/lib/notion/profile.test.ts` 신규, `mapper.test.ts` 확장
+  - 유닛 테스트(jsdom): `src/components/profile/skills-section.test.tsx`, `profile-section.test.tsx` 신규, `rich-text.test.tsx` 확장
+  - E2E: `e2e/home-profile.spec.ts` 신규 (이름·기술 스택·연락처 노출, 전화번호 미노출, 대표 프로젝트 유지, 모바일 가로 스크롤 없음. 실데이터라 값 하드코딩 없이 상대 검증)
