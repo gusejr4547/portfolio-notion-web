@@ -11,19 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-type ModeToggleProps = {
-  /** 메뉴가 열리는 방향. 하단 독처럼 화면 아래에 둘 때는 "top"으로 지정한다. */
-  side?: "top" | "bottom" | "left" | "right";
-  align?: "start" | "center" | "end";
-  /** 트리거와 메뉴 사이 간격(px). */
-  sideOffset?: number;
-};
-
-function ModeToggle({
-  side = "bottom",
-  align = "end",
-  sideOffset = 4,
-}: ModeToggleProps) {
+function ModeToggle() {
   const { setTheme } = useTheme();
 
   return (
@@ -37,7 +25,7 @@ function ModeToggle({
           </Button>
         }
       />
-      <DropdownMenuContent side={side} align={align} sideOffset={sideOffset}>
+      <DropdownMenuContent align="end">
         <DropdownMenuItem onClick={() => setTheme("light")}>
           Light
         </DropdownMenuItem>

@@ -6,6 +6,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 import { BottomNav } from "@/components/layout/bottom-nav";
+import { ThemeToggleCorner } from "@/components/layout/theme-toggle-corner";
 import { env } from "@/env";
 
 const geistSans = Geist({
@@ -50,9 +51,10 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="flex min-h-full flex-col">
+      <body className="relative flex min-h-full flex-col">
         <ThemeProvider>
           <TooltipProvider>
+            <ThemeToggleCorner />
             {/* pb-8: 하단 플로팅 독(BottomNav)과 마지막 콘텐츠 사이에 여유를 둔다. */}
             <main className="flex-1 pb-8">{children}</main>
             <BottomNav />

@@ -68,12 +68,11 @@ describe("BottomNav", () => {
     );
   });
 
-  it("테마 전환 버튼을 독 안에 렌더한다", () => {
+  it("독은 이동 전용이라 테마 전환 버튼을 포함하지 않는다", () => {
     renderAt("/");
 
-    const nav = screen.getByRole("navigation", { name: "주요 메뉴" });
-    expect(nav).toContainElement(
-      screen.getByRole("button", { name: "테마 전환" }),
-    );
+    expect(
+      screen.queryByRole("button", { name: "테마 전환" }),
+    ).not.toBeInTheDocument();
   });
 });

@@ -13,13 +13,20 @@ test.use({
 async function dockPositions(page: import("@playwright/test").Page) {
   const dock = page.getByRole("navigation", { name: "주요 메뉴" });
   const firstTab = await dock.getByRole("link").first().boundingBox();
-  const toggle = await dock.getByRole("button", { name: "테마 전환" }).boundingBox();
+  const lastTab = await dock.getByRole("link").last().boundingBox();
+  const themeButton = await page.getByRole("button", { name: "테마 전환" }).boundingBox();
   expect(firstTab).not.toBeNull();
-  expect(toggle).not.toBeNull();
-  return { firstTabX: firstTab!.x, toggleRight: toggle!.x + toggle!.width };
+  expect(lastTab).not.toBeNull();
+  expect(themeButton).not.toBeNull();
+  // 독의 좌우 끝과 우상단 테마 버튼의 오른쪽 끝이 페이지마다 같아야 한다.
+  return {
+    dockLeft: firstTab!.x,
+    dockRight: lastTab!.x + lastTab!.width,
+    themeRight: themeButton!.x + themeButton!.width,
+  };
 }
 
-test("페이지를 이동해도 독 위치가 같다 (스크롤바 유무 무관)", async ({ page }) => {
+test("페이지를 이동해도 독과 테마 버튼 위치가 같다 (스크롤바 유무 무관)", async ({ page }) => {
   await page.goto("/");
   const home = await dockPositions(page);
 

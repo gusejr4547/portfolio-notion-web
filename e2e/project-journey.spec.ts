@@ -69,7 +69,9 @@ test.describe("모바일 뷰포트 회귀", () => {
     // 하단 독은 모바일에서도 라벨과 함께 보이며 프로젝트 목록으로 이동할 수 있다.
     const dock = page.getByRole("navigation", { name: "주요 메뉴" });
     await expect(dock.getByRole("link", { name: "프로젝트", exact: true })).toBeVisible();
-    await expect(dock.getByRole("button", { name: "테마 전환" })).toBeVisible();
+    // 테마 전환은 독이 아니라 페이지 우상단 버튼이다.
+    await expect(dock.getByRole("button", { name: "테마 전환" })).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "테마 전환" })).toBeVisible();
 
     const overflow = await page.evaluate(
       () => document.documentElement.scrollWidth - document.documentElement.clientWidth,

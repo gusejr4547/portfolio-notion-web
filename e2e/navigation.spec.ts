@@ -36,6 +36,34 @@ test.describe("하단 내비게이션 독", () => {
     );
   });
 
+  test("테마 전환 버튼은 우상단에 있고 페이지와 함께 스크롤된다", async ({ page }) => {
+    await page.goto("/");
+    const themeButton = page.getByRole("button", { name: "테마 전환" });
+    await expect(themeButton).toBeVisible();
+
+    const viewport = page.viewportSize()!;
+    const before = await themeButton.boundingBox();
+    expect(before).not.toBeNull();
+    // 화면 위쪽 절반, 오른쪽 절반에 있다.
+    expect(before!.y).toBeLessThan(viewport.height / 2);
+    expect(before!.x).toBeGreaterThan(viewport.width / 2);
+
+    await page.mouse.wheel(0, 600);
+    await page.waitForTimeout(200);
+
+    // 고정되지 않으므로 스크롤하면 화면 밖(위)으로 올라간다.
+    const after = await themeButton.boundingBox();
+    expect(after).not.toBeNull();
+    expect(after!.y).toBeLessThan(before!.y);
+
+    // 독에는 테마 버튼이 없다.
+    await expect(
+      page
+        .getByRole("navigation", { name: "주요 메뉴" })
+        .getByRole("button", { name: "테마 전환" }),
+    ).toHaveCount(0);
+  });
+
   test("독은 화면 하단 중앙에 고정되어 스크롤해도 따라온다", async ({ page }) => {
     await page.goto("/");
     const dock = page.getByRole("navigation", { name: "주요 메뉴" });

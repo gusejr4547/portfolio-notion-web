@@ -5,7 +5,6 @@ import { MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ModeToggle } from "@/components/mode-toggle";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -19,8 +18,8 @@ function isActive(pathname: string, href: string) {
 }
 
 /**
- * 화면 하단에 떠 있는 pill 형태의 내비게이션 독. 홈/프로젝트 이동과 테마 전환을 담당하며,
- * 루트 레이아웃에서 유지되므로 라우트를 이동해도 활성 표시(pill)가 미끄러지듯 따라간다.
+ * 화면 하단에 떠 있는 pill 형태의 내비게이션 독(홈/프로젝트 이동 전용). 루트 레이아웃에서
+ * 유지되므로 라우트를 이동해도 활성 표시(pill)가 미끄러지듯 따라간다.
  */
 function BottomNav() {
   const pathname = usePathname();
@@ -59,9 +58,6 @@ function BottomNav() {
               </Link>
             );
           })}
-          <span aria-hidden className="mx-1 h-5 w-px bg-border" />
-          {/* 독 안쪽 여백(p-1.5)만큼 더 띄워 메뉴가 독 테두리와 겹치지 않게 한다. */}
-          <ModeToggle side="top" align="end" sideOffset={14} />
         </div>
       </nav>
     </MotionConfig>
