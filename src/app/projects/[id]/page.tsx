@@ -91,12 +91,12 @@ export default async function ProjectDetailPage({
 
       <TechStackBadges techStack={project.techStack} />
 
+      <ProjectLinks githubUrl={project.githubUrl} demoUrl={project.demoUrl} />
+
       <section className="flex flex-col gap-3">
         <h2 className="text-xl font-semibold tracking-tight">소개</h2>
         <NotionBlockRenderer blocks={blocks} />
       </section>
-
-      <ProjectLinks githubUrl={project.githubUrl} demoUrl={project.demoUrl} />
 
       <ProjectNavigation previous={previous} next={next} />
     </article>

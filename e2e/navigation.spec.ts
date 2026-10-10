@@ -78,6 +78,29 @@ test.describe("프로젝트 라우팅 플로우", () => {
     await expect(githubButton).toHaveAttribute("rel", "noopener noreferrer");
   });
 
+  test("상세 페이지의 링크 버튼은 기술스택 배지 아래, 소개 본문 위에 위치한다", async ({
+    page,
+  }) => {
+    await page.goto("/projects");
+    await page.locator('a[href^="/projects/"]').first().click();
+    await expect(page).toHaveURL(/\/projects\/[^/]+$/);
+
+    const githubBox = await page
+      .getByRole("button", { name: "GitHub" })
+      .boundingBox();
+    const introBox = await page
+      .getByRole("heading", { level: 2, name: "소개" })
+      .boundingBox();
+    const titleBox = await page.getByRole("heading", { level: 1 }).boundingBox();
+
+    expect(githubBox).not.toBeNull();
+    expect(introBox).not.toBeNull();
+    expect(titleBox).not.toBeNull();
+    // 제목(기간·기술스택 포함) → 링크 버튼 → 소개 본문 순서이다.
+    expect(githubBox!.y).toBeGreaterThan(titleBox!.y);
+    expect(githubBox!.y + githubBox!.height).toBeLessThanOrEqual(introBox!.y);
+  });
+
   test("데모 링크가 없는 프로젝트는 데모 버튼이 노출되지 않는다", async ({
     page,
   }) => {
