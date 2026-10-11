@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
+import { ChatProvider } from "@/components/chat/chat-provider";
 import { BottomNav } from "@/components/layout/bottom-nav";
 import { ThemeToggleCorner } from "@/components/layout/theme-toggle-corner";
 import { env } from "@/env";
@@ -54,11 +55,14 @@ export default function RootLayout({
       <body className="relative flex min-h-full flex-col">
         <ThemeProvider>
           <TooltipProvider>
-            <ThemeToggleCorner />
-            {/* pb-8: 하단 플로팅 독(BottomNav)과 마지막 콘텐츠 사이에 여유를 둔다. */}
-            <main className="flex-1 pb-8">{children}</main>
-            <BottomNav />
-            <Toaster />
+            {/* 챗 대화 상태: 루트에 두어 다른 페이지로 이동했다 돌아와도 유지된다(새로고침하면 초기화). */}
+            <ChatProvider>
+              <ThemeToggleCorner />
+              {/* pb-8: 하단 플로팅 독(BottomNav)과 마지막 콘텐츠 사이에 여유를 둔다. */}
+              <main className="flex-1 pb-8">{children}</main>
+              <BottomNav />
+              <Toaster />
+            </ChatProvider>
           </TooltipProvider>
         </ThemeProvider>
       </body>

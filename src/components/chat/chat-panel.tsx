@@ -7,31 +7,10 @@ import ReactMarkdown, { type Components } from "react-markdown";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  HISTORY_MAX_ITEMS,
-  MESSAGE_MAX_LENGTH,
-  type ChatErrorBody,
-  type ChatHistoryItem,
-  type ChatSuccessBody,
-} from "@/lib/chat/contract";
+import { EXAMPLE_QUESTIONS, MESSAGE_MAX_LENGTH } from "@/lib/chat/contract";
 import { cn } from "@/lib/utils";
 
-export const EXAMPLE_QUESTIONS = [
-  "어떤 프로젝트를 해봤나요?",
-  "가장 자신 있는 기술 스택은 뭔가요?",
-  "대표 프로젝트를 소개해 주세요.",
-] as const;
-
-const FALLBACK_ERROR =
-  "일시적인 문제로 답하지 못했어요. 잠시 뒤에 다시 시도해 주세요.";
-
-interface ChatMessage {
-  id: number;
-  role: "user" | "assistant";
-  content: string;
-  /** 오류 안내 말풍선. 다음 요청의 대화 기록에는 넣지 않는다. */
-  error?: boolean;
-}
+import { useChat } from "./chat-provider";
 
 // 원시 HTML은 react-markdown 기본값대로 렌더하지 않고, 링크는 사이트를 벗어나므로 새 탭에서 연다.
 const MARKDOWN_COMPONENTS: Components = {
@@ -53,13 +32,6 @@ const MARKDOWN_CLASSES = [
   "[&_strong]:font-semibold [&_code]:rounded [&_code]:bg-background/60 [&_code]:px-1 [&_code]:font-mono [&_code]:text-[0.85em]",
 ].join(" ");
 
-function toHistory(messages: ChatMessage[]): ChatHistoryItem[] {
-  return messages
-    .filter((message) => !message.error)
-    .slice(-HISTORY_MAX_ITEMS)
-    .map(({ role, content }) => ({ role, content }));
-}
-
 function AssistantAvatar({ ownerName }: { ownerName: string }) {
   return (
     <Avatar className="mt-0.5">
@@ -69,15 +41,13 @@ function AssistantAvatar({ ownerName }: { ownerName: string }) {
 }
 
 /**
- * 포트폴리오 AI 챗. 대화는 이 컴포넌트 메모리에만 두고(새로고침하면 초기화) 서버에 저장하지 않는다.
- * 입력창은 하단 독 바로 위에 고정되고, 메시지 목록은 페이지 스크롤을 따른다.
+ * 포트폴리오 AI 챗 화면. 대화 상태와 전송은 루트 레이아웃의 `ChatProvider`가 맡아서(브라우저 메모리에만,
+ * 새로고침하면 초기화) 다른 페이지로 이동했다 돌아와도 대화가 유지된다. 이 컴포넌트는 입력창 문자열과
+ * 렌더링만 갖는다. 입력창은 하단 독 바로 위에 고정되고, 메시지 목록은 페이지 스크롤을 따른다.
  */
 function ChatPanel({ ownerName }: { ownerName: string }) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { messages, pending, cooldown, disabled, send } = useChat();
   const [input, setInput] = useState("");
-  const [pending, setPending] = useState(false);
-  const [cooldown, setCooldown] = useState(0);
-  const nextId = useRef(0);
   const endRef = useRef<HTMLDivElement>(null);
   const inputId = useId();
 
@@ -85,60 +55,13 @@ function ChatPanel({ ownerName }: { ownerName: string }) {
     endRef.current?.scrollIntoView?.({ behavior: "smooth", block: "end" });
   }, [messages, pending]);
 
-  useEffect(() => {
-    if (cooldown <= 0) return;
-    const timer = setTimeout(() => setCooldown((seconds) => seconds - 1), 1000);
-    return () => clearTimeout(timer);
-  }, [cooldown]);
-
-  const disabled = pending || cooldown > 0;
-
-  function append(message: Omit<ChatMessage, "id">) {
-    const id = nextId.current++;
-    setMessages((previous) => [...previous, { ...message, id }]);
-  }
-
-  async function send(raw: string) {
-    const message = raw.trim();
-    if (!message || disabled) return;
-
-    const history = toHistory(messages);
-    append({ role: "user", content: message });
-    setInput("");
-    setPending(true);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ message, history }),
-      });
-      const body = (await response.json().catch(() => null)) as
-        ChatSuccessBody | ChatErrorBody | null;
-
-      if (response.ok && body && "text" in body) {
-        append({ role: "assistant", content: body.text });
-        return;
-      }
-
-      const error = body && "type" in body ? body : null;
-      append({
-        role: "assistant",
-        content: error?.message ?? FALLBACK_ERROR,
-        error: true,
-      });
-      if (response.status === 429 && error?.retryAfter)
-        setCooldown(error.retryAfter);
-    } catch {
-      append({ role: "assistant", content: FALLBACK_ERROR, error: true });
-    } finally {
-      setPending(false);
-    }
+  function submit(raw: string) {
+    if (send(raw)) setInput("");
   }
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void send(input);
+    submit(input);
   }
 
   return (
@@ -173,7 +96,7 @@ function ChatPanel({ ownerName }: { ownerName: string }) {
                 size="sm"
                 className="rounded-full"
                 disabled={disabled}
-                onClick={() => void send(question)}
+                onClick={() => submit(question)}
               >
                 {question}
               </Button>

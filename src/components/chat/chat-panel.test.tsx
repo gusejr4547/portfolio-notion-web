@@ -1,9 +1,10 @@
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { EXAMPLE_QUESTIONS } from "@/lib/chat/contract";
 import { act, render, screen, waitFor } from "@/test/utils";
 
-import { ChatPanel, EXAMPLE_QUESTIONS } from "./chat-panel";
+import { ChatPanel } from "./chat-panel";
 
 const fetchMock = vi.fn();
 
@@ -196,6 +197,57 @@ describe("ChatPanel", () => {
       vi.advanceTimersByTime(1000);
     });
     await waitFor(() => expect(getInput()).toBeEnabled());
+  });
+
+  it("쿼터 초과(429 quota_exceeded)도 retryAfter초 동안 입력을 막는다", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          type: "quota_exceeded",
+          message: "답변 한도를 다 썼어요.",
+          retryAfter: 45,
+        },
+        429,
+      ),
+    );
+    render(<ChatPanel ownerName="홍길동" />);
+
+    await user.type(getInput(), "안녕{Enter}");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "답변 한도를 다 썼어요.",
+    );
+    expect(getInput()).toBeDisabled();
+    expect(getInput()).toHaveAttribute(
+      "placeholder",
+      "45초 뒤에 다시 물어볼 수 있어요",
+    );
+  });
+
+  it("하루 한도(daily_limit)는 안내만 보여주고 초 카운트다운으로 입력을 막지 않는다", async () => {
+    const user = userEvent.setup();
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          type: "daily_limit",
+          message: "오늘 질문 한도(30회)를 다 썼어요. 내일 다시 물어봐 주세요.",
+        },
+        429,
+      ),
+    );
+    render(<ChatPanel ownerName="홍길동" />);
+
+    await user.type(getInput(), "안녕{Enter}");
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(
+      "오늘 질문 한도(30회)를 다 썼어요.",
+    );
+    expect(getInput()).toBeEnabled();
+    expect(getInput()).toHaveAttribute(
+      "placeholder",
+      "포트폴리오에 대해 물어보세요",
+    );
   });
 
   it("답변 속 링크는 새 탭에서 연다", async () => {

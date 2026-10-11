@@ -1,15 +1,18 @@
 import type { ReactElement, ReactNode } from "react";
 import { render, type RenderOptions } from "@testing-library/react";
 
+import { ChatProvider } from "@/components/chat/chat-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// src/app/layout.tsx의 provider 중첩(ThemeProvider > TooltipProvider)을 그대로 미러링한다.
-// 새 provider가 layout에 추가되면 여기도 함께 갱신한다.
+// src/app/layout.tsx의 provider 중첩(ThemeProvider > TooltipProvider > ChatProvider)을 그대로 미러링한다.
+// 새 provider가 layout에 추가되면 여기도 함께 갱신한다. render마다 새 Provider가 만들어져 테스트 간 상태가 섞이지 않는다.
 function AllProviders({ children }: { children: ReactNode }) {
   return (
     <ThemeProvider enableSystem={false}>
-      <TooltipProvider>{children}</TooltipProvider>
+      <TooltipProvider>
+        <ChatProvider>{children}</ChatProvider>
+      </TooltipProvider>
     </ThemeProvider>
   );
 }

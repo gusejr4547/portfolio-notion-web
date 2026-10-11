@@ -1,5 +1,8 @@
 import { expect, test, type Page } from "@playwright/test";
 
+// 예시 질문 문구는 한 곳(contract.ts)에서 바꾸므로 테스트도 그 값을 읽는다. (상수만 있는 파일이라 상대 경로로 가져온다.)
+import { EXAMPLE_QUESTIONS } from "../src/lib/chat/contract";
+
 // 실제 Gemini를 호출하지 않도록 /api/chat 응답은 모두 스텁한다(비용·불안정성 방지).
 // 실제 모델 답변 품질은 API 키가 있을 때 수동(Playwright MCP)으로 확인한다.
 async function stubChat(page: Page, status: number, body: unknown) {
@@ -48,15 +51,39 @@ test.describe("AI 챗", () => {
     await expect(questionInput(page)).toHaveValue("");
   });
 
+  test("다른 탭으로 이동했다 돌아와도 대화가 남고, 새로고침하면 초기화된다", async ({
+    page,
+  }) => {
+    await stubChat(page, 200, { text: "이동 후에도 남는 답변" });
+    await page.goto("/chat");
+    await questionInput(page).fill("이동 테스트 질문");
+    await questionInput(page).press("Enter");
+    await expect(page.getByText("이동 후에도 남는 답변")).toBeVisible();
+
+    const dock = page.getByRole("navigation", { name: "주요 메뉴" });
+    await dock.getByRole("link", { name: "홈", exact: true }).click();
+    await expect(page).toHaveURL("/");
+    await dock.getByRole("link", { name: "챗", exact: true }).click();
+    await expect(page).toHaveURL("/chat");
+
+    await expect(page.getByText("이동 테스트 질문")).toBeVisible();
+    await expect(page.getByText("이동 후에도 남는 답변")).toBeVisible();
+
+    await page.reload();
+
+    await expect(page.getByText("이동 테스트 질문")).toHaveCount(0);
+    await expect(
+      page.getByRole("button", { name: EXAMPLE_QUESTIONS[0] }),
+    ).toBeVisible();
+  });
+
   test("예시 질문을 누르면 바로 질문하고 예시 칩은 사라진다", async ({
     page,
   }) => {
     await stubChat(page, 200, { text: "예시 답변" });
     await page.goto("/chat");
 
-    const chip = page.getByRole("button", {
-      name: "어떤 프로젝트를 해봤나요?",
-    });
+    const chip = page.getByRole("button", { name: EXAMPLE_QUESTIONS[0] });
     await chip.click();
 
     await expect(page.getByText("예시 답변")).toBeVisible();
@@ -102,6 +129,28 @@ test.describe("AI 챗", () => {
       /초 뒤에 다시/,
     );
     await expect(questionInput(page)).toBeEnabled({ timeout: 5_000 });
+  });
+
+  test("하루 한도(daily_limit)는 안내만 보여주고 입력은 막지 않는다", async ({
+    page,
+  }) => {
+    await stubChat(page, 429, {
+      type: "daily_limit",
+      message: "오늘 질문 한도(30회)를 다 썼어요. 내일 다시 물어봐 주세요.",
+    });
+    await page.goto("/chat");
+
+    await questionInput(page).fill("안녕하세요");
+    await questionInput(page).press("Enter");
+
+    await expect(
+      page.getByRole("alert").filter({ hasText: "오늘 질문 한도(30회)" }),
+    ).toBeVisible();
+    await expect(questionInput(page)).toBeEnabled();
+    await expect(questionInput(page)).toHaveAttribute(
+      "placeholder",
+      "포트폴리오에 대해 물어보세요",
+    );
   });
 
   test("모바일에서 가로 스크롤이 없고 입력창이 독을 가리지 않는다", async ({
