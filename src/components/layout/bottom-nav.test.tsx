@@ -68,6 +68,22 @@ describe("BottomNav", () => {
     );
   });
 
+  it("챗 링크를 렌더하고 /chat에서는 챗만 현재 페이지로 표시한다", () => {
+    renderAt("/chat");
+
+    expect(screen.getByRole("link", { name: "챗" })).toHaveAttribute("href", "/chat");
+    expect(screen.getByRole("link", { name: "챗" })).toHaveAttribute(
+      "aria-current",
+      "page",
+    );
+    expect(screen.getByRole("link", { name: "홈" })).not.toHaveAttribute(
+      "aria-current",
+    );
+    expect(screen.getByRole("link", { name: "프로젝트" })).not.toHaveAttribute(
+      "aria-current",
+    );
+  });
+
   it("독은 이동 전용이라 테마 전환 버튼을 포함하지 않는다", () => {
     renderAt("/");
 

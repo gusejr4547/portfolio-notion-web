@@ -1,6 +1,6 @@
 "use client";
 
-import { Briefcase, House } from "lucide-react";
+import { Briefcase, House, MessageCircle } from "lucide-react";
 import { MotionConfig, motion } from "motion/react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 const NAV_ITEMS = [
   { href: "/", label: "홈", icon: House },
   { href: "/projects", label: "프로젝트", icon: Briefcase },
+  { href: "/chat", label: "챗", icon: MessageCircle },
 ] as const;
 
 /** 홈은 정확히 "/"일 때만, 나머지는 하위 경로(/projects/[id] 등)에서도 활성으로 본다. */
@@ -18,7 +19,7 @@ function isActive(pathname: string, href: string) {
 }
 
 /**
- * 화면 하단에 떠 있는 pill 형태의 내비게이션 독(홈/프로젝트 이동 전용). 루트 레이아웃에서
+ * 화면 하단에 떠 있는 pill 형태의 내비게이션 독(홈/프로젝트/챗 이동 전용). 루트 레이아웃에서
  * 유지되므로 라우트를 이동해도 활성 표시(pill)가 미끄러지듯 따라간다.
  */
 function BottomNav() {
