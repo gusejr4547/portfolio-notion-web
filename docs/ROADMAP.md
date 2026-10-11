@@ -149,3 +149,21 @@ PRD가 "MVP 이후 기능"으로 분류했던 태그 필터링과 겹치지만, 
   - `src/components/layout/theme-toggle-corner.tsx` 신규: 테마 토글을 우상단에 배치하는 absolute 래퍼(본문 컨테이너 `max-w-5xl` 오른쪽 끝에 정렬, 화면에 고정하지 않고 페이지와 함께 스크롤). `body`에 `relative` 추가
   - 유닛 테스트(jsdom): `bottom-nav.test.tsx`(`usePathname` mock, 독에 테마 버튼 없음), `theme-toggle-corner.test.tsx` 신규
   - E2E: `navigation`(홈 탭 이동·`aria-current`·독은 스크롤해도 하단 고정·테마 버튼은 우상단에서 함께 스크롤), `project-journey`(모바일에서도 독 노출·가로 스크롤 없음), `layout-stability`(독과 테마 버튼 위치가 페이지 간 동일) 갱신
+
+### Phase 8: AI 챗 ✅ - 완료
+
+방문자가 포트폴리오에 대해 물으면 포트폴리오 주인의 AI 버전이 Notion 데이터만 근거로 1인칭으로 답하는 채팅을 추가한다. 하단 독에 "챗" 탭을 두고 `/chat`에서 대화한다. 참고 프로젝트(`ai-portfolio`)의 구조를 검토해, 클라이언트가 컨텍스트를 보내던 방식과 입력 제한·빈 응답 처리가 없던 점을 고쳤다. [docs/PRD.md](./PRD.md)에 F007로 등재되어 있다. 새 의존성은 `@google/genai`(Google 공식 SDK, REST 직접 호출·Vercel AI SDK와 비교 후 선택)와 `react-markdown`이다.
+
+- **Task 017: AI 챗 (F007)** ✅ - 완료
+  - See: `/tasks/017-ai-chat.md`
+  - `src/lib/chat/build-context.ts`: 프로필(블록 + 구조화된 기술 스택)과 프로젝트(최신순, 메타데이터 + `pages.retrieveMarkdown` 본문, 실패 시 블록 변환)로 컨텍스트를 만들고 이미지·`<br>`·전화번호를 정리. `cache(unstable_cache(...))` 600초
+  - `src/lib/chat/system-prompt.ts`: 1인칭·근거·전화번호 비공개·거절 규칙, 컨텍스트는 `<portfolio>` 데이터로 분리
+  - `src/lib/chat/llm.ts`: `@google/genai` `generateContent`(`systemInstruction`, `maxOutputTokens` 1024, `thinkingLevel: LOW`, 15초 타임아웃). 빈 응답은 `promptFeedback`·`finishReason`으로, 실패는 `ApiError.status`로 분류(`ChatLlmError`)
+  - `src/lib/chat/rate-limit.ts`: IP별 분당 5회(인스턴스 메모리, best-effort)
+  - `src/app/api/chat/route.ts`: 동일 출처 검사 → zod 검증 → 속도 제한 → 키 확인 → 컨텍스트 → Gemini. 오류 계약 `{ type, message, retryAfter? }`(`src/lib/chat/contract.ts`), `no-store`
+  - `src/app/chat/page.tsx`, `src/components/chat/chat-panel.tsx`: AI 표식·Gemini 전송 고지, 예시 질문, 마크다운 답변, 로딩·오류·429 카운트다운, 입력창은 독 위 고정. `bottom-nav.tsx`에 "챗" 탭
+  - 환경변수 `GEMINI_API_KEY`·`GEMINI_MODEL`(선택). 키가 없으면 챗은 503 "준비되지 않았어요" 안내
+  - 유닛 테스트(node): `build-context`, `blocks-to-text`, `system-prompt`, `llm`(`vi.mock("@google/genai")`), `rate-limit`, `route`
+  - 유닛 테스트(jsdom): `chat-panel.test.tsx` 신규, `bottom-nav.test.tsx` 확장
+  - E2E: `e2e/chat.spec.ts` 신규(`/api/chat` 응답 스텁, 모바일 겹침·가로 스크롤 확인)
+  - 남은 확인: API 키 설정 후 실제 답변 품질(근거·전화번호·프롬프트 주입 거절)과 `thinkingLevel` 허용 여부
