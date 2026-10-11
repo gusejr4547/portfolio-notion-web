@@ -20,7 +20,7 @@ vi.mock("@google/genai", async (importOriginal) => {
   return { ...actual, GoogleGenAI: mocks.GoogleGenAI };
 });
 
-const { ChatLlmError, DEFAULT_GEMINI_MODEL, generateReply } =
+const { ChatLlmError, DEFAULT_GEMINI_MODEL, generateReply, resetQuotaGuard } =
   await import("./llm");
 
 const input = {
@@ -37,6 +37,7 @@ function response(overrides: {
   text?: string;
   finishReason?: FinishReason;
   blockReason?: string;
+  usage?: { thoughtsTokenCount?: number; candidatesTokenCount?: number };
 }) {
   return {
     text: overrides.text,
@@ -46,6 +47,7 @@ function response(overrides: {
     promptFeedback: overrides.blockReason
       ? { blockReason: overrides.blockReason }
       : undefined,
+    usageMetadata: overrides.usage,
   };
 }
 
@@ -62,9 +64,13 @@ async function captureError(): Promise<InstanceType<typeof ChatLlmError>> {
 beforeEach(() => {
   mocks.env.GEMINI_API_KEY = "test-key";
   mocks.env.GEMINI_MODEL = undefined;
+  resetQuotaGuard();
+  vi.spyOn(console, "warn").mockImplementation(() => {});
 });
 
 afterEach(() => {
+  vi.useRealTimers();
+  vi.restoreAllMocks();
   vi.clearAllMocks();
 });
 
@@ -89,7 +95,7 @@ describe("generateReply", () => {
       systemInstruction: "시스템 프롬프트",
       temperature: 0.7,
       topP: 0.9,
-      maxOutputTokens: 1024,
+      maxOutputTokens: 2048,
       thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },
     });
     expect(request.config.abortSignal).toBeInstanceOf(AbortSignal);
@@ -168,5 +174,119 @@ describe("generateReply", () => {
     );
 
     expect((await captureError()).kind).toBe("unavailable");
+  });
+
+  describe("답변 끊김", () => {
+    it("본문이 있어도 MAX_TOKENS로 끝났으면 잘린 답이므로 truncated로 던진다", async () => {
+      mocks.generateContent.mockResolvedValue(
+        response({
+          text: "- 2023.10 특화프로젝트 우수상(",
+          finishReason: FinishReason.MAX_TOKENS,
+        }),
+      );
+
+      expect((await captureError()).kind).toBe("truncated");
+    });
+
+    it("정상 종료(STOP)면 경고를 남기지 않는다", async () => {
+      mocks.generateContent.mockResolvedValue(
+        response({ text: "답변", finishReason: FinishReason.STOP }),
+      );
+
+      await generateReply(input);
+
+      expect(console.warn).not.toHaveBeenCalled();
+    });
+
+    it("정상 종료가 아니면 종료 사유와 토큰 수만 경고로 남기고 내용은 남기지 않는다", async () => {
+      mocks.generateContent.mockResolvedValue(
+        response({
+          text: "비밀 답변 내용",
+          finishReason: FinishReason.MAX_TOKENS,
+          usage: { thoughtsTokenCount: 982, candidatesTokenCount: 38 },
+        }),
+      );
+
+      await captureError();
+
+      expect(console.warn).toHaveBeenCalledWith(
+        "[chat] finish=MAX_TOKENS thoughts=982 out=38",
+      );
+      const logged = JSON.stringify(vi.mocked(console.warn).mock.calls);
+      expect(logged).not.toContain("비밀 답변 내용");
+      expect(logged).not.toContain(input.message);
+    });
+  });
+
+  describe("쿼터 차단", () => {
+    it("429를 받으면 retryAfter 60초를 담은 quota 오류를 던진다", async () => {
+      mocks.generateContent.mockRejectedValue(
+        new ApiError({ message: "quota", status: 429 }),
+      );
+
+      const error = await captureError();
+
+      expect(error.kind).toBe("quota");
+      expect(error.retryAfter).toBe(60);
+    });
+
+    it("429 직후 60초 안에는 Gemini를 호출하지 않고 남은 시간을 담은 quota 오류를 던진다", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-10-11T00:00:00Z"));
+      mocks.generateContent.mockRejectedValueOnce(
+        new ApiError({ message: "quota", status: 429 }),
+      );
+      await captureError();
+      expect(mocks.generateContent).toHaveBeenCalledTimes(1);
+
+      vi.advanceTimersByTime(20_000);
+      const blocked = await captureError();
+
+      expect(blocked.kind).toBe("quota");
+      expect(blocked.retryAfter).toBe(40);
+      expect(mocks.generateContent).toHaveBeenCalledTimes(1);
+    });
+
+    it("차단 시간이 지나면 다시 Gemini를 호출한다", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-10-11T00:00:00Z"));
+      mocks.generateContent.mockRejectedValueOnce(
+        new ApiError({ message: "quota", status: 429 }),
+      );
+      await captureError();
+
+      vi.advanceTimersByTime(60_001);
+      mocks.generateContent.mockResolvedValue(response({ text: "다시 답변" }));
+
+      await expect(generateReply(input)).resolves.toBe("다시 답변");
+      expect(mocks.generateContent).toHaveBeenCalledTimes(2);
+    });
+
+    it("차단 중에 건너뛴 요청은 차단 시간을 늘리지 않는다", async () => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date("2026-10-11T00:00:00Z"));
+      mocks.generateContent.mockRejectedValueOnce(
+        new ApiError({ message: "quota", status: 429 }),
+      );
+      await captureError();
+
+      vi.advanceTimersByTime(30_000);
+      await captureError(); // 건너뜀
+      vi.advanceTimersByTime(30_001); // 첫 429로부터 60초가 지남
+
+      mocks.generateContent.mockResolvedValue(response({ text: "답변" }));
+      await expect(generateReply(input)).resolves.toBe("답변");
+    });
+
+    it("429가 아닌 오류는 차단하지 않는다", async () => {
+      mocks.generateContent.mockRejectedValueOnce(
+        new ApiError({ message: "server", status: 500 }),
+      );
+      await captureError();
+
+      mocks.generateContent.mockResolvedValue(response({ text: "답변" }));
+
+      await expect(generateReply(input)).resolves.toBe("답변");
+    });
   });
 });

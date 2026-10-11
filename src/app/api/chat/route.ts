@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 import { env } from "@/env";
-import { buildChatContext } from "@/lib/chat/build-context";
+import { askPortfolio } from "@/lib/chat/ask";
 import {
   HISTORY_CONTENT_MAX_LENGTH,
   HISTORY_MAX_ITEMS,
@@ -9,12 +9,11 @@ import {
   type ChatErrorBody,
 } from "@/lib/chat/contract";
 import {
-  ChatLlmError,
-  generateReply,
-  type ChatLlmErrorKind,
-} from "@/lib/chat/llm";
-import { checkRateLimit } from "@/lib/chat/rate-limit";
-import { buildSystemPrompt } from "@/lib/chat/system-prompt";
+  getExampleAnswer,
+  isExampleQuestion,
+} from "@/lib/chat/example-answers";
+import { ChatLlmError, type ChatLlmErrorKind } from "@/lib/chat/llm";
+import { DAILY_MAX_REQUESTS, checkRateLimit } from "@/lib/chat/rate-limit";
 
 // 모델 응답(최대 15초)과 콜드 스타트 시 Notion 컨텍스트 조회를 감안한 상한.
 export const maxDuration = 30;
@@ -135,6 +134,18 @@ export async function POST(request: Request) {
 
   const rateLimit = checkRateLimit(getClientIp(request));
   if (!rateLimit.allowed) {
+    const headers = { "Retry-After": String(rateLimit.retryAfter) };
+    if (rateLimit.reason === "day") {
+      // 하루 단위라 화면이 초 카운트다운으로 입력을 막지 않도록 body에는 retryAfter를 넣지 않는다.
+      return errorResponse(
+        429,
+        {
+          type: "daily_limit",
+          message: `오늘 질문 한도(${DAILY_MAX_REQUESTS}회)를 다 썼어요. 내일 다시 물어봐 주세요.`,
+        },
+        headers,
+      );
+    }
     return errorResponse(
       429,
       {
@@ -142,7 +153,7 @@ export async function POST(request: Request) {
         message: "질문이 너무 빨라요. 잠시 뒤에 다시 물어봐 주세요.",
         retryAfter: rateLimit.retryAfter,
       },
-      { "Retry-After": String(rateLimit.retryAfter) },
+      headers,
     );
   }
 
@@ -151,22 +162,25 @@ export async function POST(request: Request) {
   }
 
   try {
-    const context = await buildChatContext();
-    const text = await generateReply({
-      system: buildSystemPrompt(context),
-      history: parsed.data.history,
-      message: parsed.data.message,
-    });
+    const { message, history } = parsed.data;
+    // 대화 첫 턴의 예시 질문은 답변을 재사용하고, 그 밖의 질문은 매번 Gemini에 묻는다.
+    const text =
+      history.length === 0 && isExampleQuestion(message)
+        ? await getExampleAnswer(message)
+        : await askPortfolio({ message, history });
     return Response.json({ text }, { headers: NO_STORE });
   } catch (error) {
     // 방문자 메시지가 로그에 남지 않도록 오류 종류만 기록한다.
     if (error instanceof ChatLlmError) {
       console.error(`[chat] llm error: ${error.kind}`);
       const { status, body } = LLM_ERRORS[error.kind];
-      const headers: Record<string, string> = body.retryAfter
-        ? { "Retry-After": String(body.retryAfter) }
-        : {};
-      return errorResponse(status, body, headers);
+      // 쿼터 차단 중이면 남은 시간을, 아니면 기본값을 안내한다.
+      const retryAfter = error.retryAfter ?? body.retryAfter;
+      return errorResponse(
+        status,
+        retryAfter ? { ...body, retryAfter } : body,
+        retryAfter ? { "Retry-After": String(retryAfter) } : {},
+      );
     }
     console.error(
       "[chat] context error",
