@@ -1,5 +1,6 @@
 import type { PageObjectResponse } from "@notionhq/client";
 
+import { toSafeUrl } from "@/lib/safe-url";
 import { SKILLS_PROPERTY, type SkillGroup } from "@/types/profile";
 import { NOTION_PROPERTY, type Project, type ProjectPeriod } from "@/types/project";
 
@@ -72,7 +73,7 @@ function extractMultiSelect(property: NotionProperty | undefined): string[] {
 
 function extractUrl(property: NotionProperty | undefined): string | undefined {
   if (!property || property.type !== "url") return undefined;
-  return property.url ?? undefined;
+  return toSafeUrl(property.url);
 }
 
 function extractThumbnail(property: NotionProperty | undefined): string | undefined {

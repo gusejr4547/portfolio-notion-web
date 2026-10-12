@@ -1,6 +1,7 @@
 import type { RichTextItemResponse } from "@notionhq/client";
 import Link from "next/link";
 
+import { toSafeUrl } from "@/lib/safe-url";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,13 +20,14 @@ function RichText({ richText }: { richText: RichTextItemResponse[] }) {
             "rounded bg-muted px-1 py-0.5 font-mono text-sm text-foreground",
         );
 
-        if (item.href) {
+        const href = toSafeUrl(item.href);
+        if (href) {
           // mailto: 링크는 새 탭을 열면 빈 탭이 남으므로 같은 탭에서 메일 앱으로 넘긴다.
-          const isMail = item.href.startsWith("mailto:");
+          const isMail = href.startsWith("mailto:");
           return (
             <Link
               key={index}
-              href={item.href}
+              href={href}
               target={isMail ? undefined : "_blank"}
               rel={isMail ? undefined : "noopener noreferrer"}
               className={cn("underline underline-offset-2", className)}
