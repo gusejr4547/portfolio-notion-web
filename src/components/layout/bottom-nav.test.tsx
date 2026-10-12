@@ -1,4 +1,5 @@
 import { usePathname } from "next/navigation";
+import { renderToString } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { render, screen } from "@/test/utils";
@@ -82,6 +83,14 @@ describe("BottomNav", () => {
     expect(screen.getByRole("link", { name: "프로젝트" })).not.toHaveAttribute(
       "aria-current",
     );
+  });
+
+  it("서버 렌더 결과에는 활성 표시가 없어 서버 pathname과 무관하게 하이드레이션이 일치한다", () => {
+    vi.mocked(usePathname).mockReturnValue("/");
+
+    const html = renderToString(<BottomNav />);
+
+    expect(html).not.toContain("aria-current");
   });
 
   it("독은 이동 전용이라 테마 전환 버튼을 포함하지 않는다", () => {
