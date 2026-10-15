@@ -167,3 +167,20 @@ PRD가 "MVP 이후 기능"으로 분류했던 태그 필터링과 겹치지만, 
   - 유닛 테스트(jsdom): `chat-panel.test.tsx` 신규, `bottom-nav.test.tsx` 확장
   - E2E: `e2e/chat.spec.ts` 신규(`/api/chat` 응답 스텁, 모바일 겹침·가로 스크롤 확인)
   - 남은 확인: API 키 설정 후 실제 답변 품질(근거·전화번호·프롬프트 주입 거절)과 `thinkingLevel` 허용 여부
+
+### Phase 9: PDF 내보내기 ✅ - 완료
+
+포트폴리오를 종이·파일로 제출해야 할 때, 원하는 프로젝트와 영역만 골라 PDF로 저장할 수 있게 한다. 서버 PDF 생성(Playwright)과 클라이언트 캡처(`html2canvas`+`jspdf`)를 비교해 **브라우저 인쇄(`window.print()`) + `@media print` CSS**로 정했다. PDF 생성 자체에는 의존성이 없고(순서 드래그에만 `@dnd-kit` 사용), 텍스트 선택·링크 클릭·한글 품질이 유지되며 Notion 이미지 URL 만료와 서버리스 용량 문제가 없다. [docs/PRD.md](./PRD.md)에 F008로 등재되어 있다.
+
+- **Task 018: PDF 내보내기 (F008)** ✅ - 완료
+  - See: `/tasks/018-pdf-export.md`
+  - `src/lib/export/selection.ts` 신규: "꺼진 것만 저장"하는 `ExportState`(기본값 전부 켜짐), `moveItem`·토글·`normalize`(삭제된 id 제거, 새 id는 끝에 추가)·`serialize`/`parse`(zod 검증, 손상 시 `null`)
+  - `src/app/export/page.tsx` 신규(async Server Component, `revalidate = 600`): `getProjects`·`getProjectBlocks`·`getOptionalProfile` 재사용. 본문·프로필은 서버에서 `NotionBlockRenderer`/`ProfileSection`으로 렌더링해 슬롯(`ReactNode`)으로 클라이언트에 전달
+  - `src/components/export/export-builder.tsx` 신규(client): 프로젝트 체크박스, 드래그 앤 드롭(`@dnd-kit`)·위/아래 버튼 순서 이동, 프로젝트별 영역 토글(썸네일·요약·기술 스택·링크·본문), 프로필 토글, "PDF 저장"(`window.print()`), 선택 결과 미리보기. 상태는 localStorage에 보관하되 하이드레이션 이후 effect에서만 읽고 모든 접근을 `try/catch`로 감싼다. 링크는 `toSafeUrl` 경유
+  - `src/app/globals.css`: `@media print`(라이트 토큰 강제, 프로젝트마다 새 페이지, 코드·이미지 `break-inside: avoid`, 외부 링크 주소 표기). `BottomNav`·`ThemeToggleCorner`에 `print:hidden`. `layout.tsx` provider 트리는 변경 없음
+  - `src/components/ui/checkbox.tsx`: shadcn CLI로 추가(CLI가 `cn`을 외부 패키지에서 가져오도록 생성해 `@/lib/utils`로 수정하고 `package.json` 변경은 되돌림)
+  - `src/app/projects/page.tsx`: 제목 옆 "PDF로 내보내기" 버튼
+  - 순서 변경 드래그 앤 드롭: `@dnd-kit/core`·`sortable`·`utilities`·`modifiers`(마우스·터치·키보드 지원). 핸들만 드래그 시작점이고 6px 이상 움직여야 시작해 체크박스·버튼 클릭과 겹치지 않는다. `DndContext`에 고정 `id`를 줘 하이드레이션 aria 불일치를 막는다. `moveItemTo`는 순수 로직으로 분리
+  - 유닛 테스트(node): `src/lib/export/selection.test.ts` 신규
+  - 유닛 테스트(jsdom): `src/components/export/export-builder.test.tsx` 신규
+  - E2E: `e2e/export.spec.ts` 신규(진입, 순서 변경, 섹션·프로젝트 제외, 새로고침 복원, 인쇄 미디어 에뮬레이션. 개수·제목 하드코딩 없이 상대 검증)
