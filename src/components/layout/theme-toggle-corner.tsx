@@ -6,7 +6,7 @@ import { ModeToggle } from "@/components/mode-toggle";
  */
 function ThemeToggleCorner() {
   return (
-    <div className="pointer-events-none absolute inset-x-0 top-0 z-40">
+    <div className="pointer-events-none absolute inset-x-0 top-0 z-40 print:hidden">
       <div className="mx-auto flex max-w-5xl justify-end px-4 pt-4">
         <div className="pointer-events-auto">
           <ModeToggle />

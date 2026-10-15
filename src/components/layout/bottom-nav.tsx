@@ -45,7 +45,7 @@ function BottomNav() {
     <MotionConfig reducedMotion="user">
       <nav
         aria-label="주요 메뉴"
-        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-6"
+        className="pointer-events-none fixed inset-x-0 bottom-0 z-50 flex justify-center px-4 pb-6 print:hidden"
       >
         <div className="pointer-events-auto flex items-center gap-1 rounded-full border border-border bg-background/70 p-1.5 shadow-[0_4px_20px_rgba(0,0,0,0.08)] backdrop-blur-xl">
           {NAV_ITEMS.map((item) => {
